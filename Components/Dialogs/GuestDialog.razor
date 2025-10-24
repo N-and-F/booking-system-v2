@@ -1,0 +1,104 @@
+﻿@* @using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@inject ISnackbar Snackbar
+
+@if (DialogType != "Delete")
+{
+    <MudDialog Style="width: 500px">
+        <TitleContent>
+            <MudText Typo="Typo.h6">
+                <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3 mb-n1" />
+                @DialogType Guest
+            </MudText>
+        </TitleContent>
+        <DialogContent>
+            <MudTextField T="string" @bind-Value="@Guest.Name" Label="Name" ReadOnly="IsReadOnly(DialogType)" />
+            <MudTextField T="string" @bind-Value="@Guest.Email" Label="Email" ReadOnly="IsReadOnly(DialogType)" />
+            <MudTextField T="string" @bind-Value="@Guest.Country" Label="Nationality" ReadOnly="IsReadOnly(DialogType)" />
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            @if (DialogType == "View")
+            {
+                <MudButton Color="Color.Primary" OnClick="HandleEditButton">Edit</MudButton>
+            }
+            else
+            {
+                <MudButton Color="Color.Primary" OnClick="SaveUser">Save</MudButton>
+            }
+        </DialogActions>
+    </MudDialog>
+}
+else 
+{
+    <MudDialog>
+        <DialogContent>
+            <MudText>Are you sure you want to delete this user?</MudText>
+        </DialogContent>
+        <DialogActions>
+            <MudButton OnClick="Cancel">Cancel</MudButton>
+            <MudButton Color="Color.Error" Variant="Variant.Filled" OnClick="HandleDeleteButton">Delete</MudButton>
+            </DialogActions>
+        </MudDialog>
+}
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Guest Guest { get; set; } = new Guest();
+    [Parameter] public string DialogType { get; set; } = "Add";
+
+    [Inject]
+    private GuestsLogic GuestLogic { get; set; }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    private async void SaveUser()
+    {
+        if (Guest.Name == "" || Guest.Name == null)
+        {
+            Snackbar.Add("Name should not be empty", Severity.Error);
+            return;
+        }
+        if (Guest.Email != null && !await GuestLogic.IsUnique(Guest.Email, Guest.Id))
+        {
+            Snackbar.Add("Email should be unique", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            if (DialogType == "Add") await GuestLogic.CreateGuest(Guest);
+            if (DialogType == "Edit") await GuestLogic.EditGuest(Guest);
+            Snackbar.Add("Changes were saved successfully", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("A problem occured", Severity.Error);
+        }
+        MudDialog.Close(DialogResult.Ok(Guest));
+    }
+
+    private void HandleEditButton()
+    {
+        DialogType = "Edit";
+    }
+
+    private async void HandleDeleteButton()
+    {
+
+        await GuestLogic.DeleteGuest(Guest.Id);
+        Snackbar.Add("Guest was successfully deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(Guest));
+    }
+} *@

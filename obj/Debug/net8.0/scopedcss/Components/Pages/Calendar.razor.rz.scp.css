@@ -1,0 +1,34 @@
+﻿section[b-s1qg16lg4r] {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+}
+
+section > div[b-s1qg16lg4r] {
+    border: 1px solid black;
+    padding: 10px;
+    border-top: none;
+    border-right: none;
+}
+
+section > div:nth-child(7n)[b-s1qg16lg4r], 
+section > div:last-child[b-s1qg16lg4r]{
+    border-right: 1px solid black;
+}
+
+.title[b-s1qg16lg4r] {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.day-name[b-s1qg16lg4r] {
+    color: #ffff;
+    border: 1px solid black;
+    border-left: none;
+}
+
+.scrollable-content[b-s1qg16lg4r] {
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: break-spaces;
+}

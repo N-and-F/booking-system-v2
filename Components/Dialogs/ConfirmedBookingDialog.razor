@@ -1,0 +1,125 @@
+﻿@using reservationSystem.Models.DTO
+@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@inject ILocalStorageService _localstorage;
+
+
+<MudDialog Class="overflow-hidden">
+    <DialogContent>
+        @if (IsLoading)
+        {
+            <MudGrid Class="m-5">
+                <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+            </MudGrid>
+        }
+        else
+        {
+            <MudGrid Style="margin-bottom: 10px; text-align: center">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5"
+                             Style="font-weight: 500; text-align: center;">Booking Confirmation</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h6"
+                             Style="text-align: center;">
+                        Thank you! Your booking has been confirmed. Here are the booking details:
+                    </MudText>
+                </MudItem>
+
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Guest: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;">@GuestName</MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;" Class="mt-5">Check In: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;" Class="mt-5">@CheckInDate</MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;" Class="mt-5">Check Out: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;" Class="mt-5">@CheckOutDate</MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;" Class="mt-5">Rooms: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;" Class="mt-5">@Rooms</MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;" Class="mt-5">Paid: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;" Class="mt-5">@AccountsLogic.FormatMoney(DownPayment)</MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;" Class="mt-5">Total Amount: </MudText>
+                </MudItem>
+                <MudItem xs="6" Style="padding-bottom: 0px;">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 200;" Class="mt-5">@AccountsLogic.FormatMoney(TotalPayment)</MudText>
+                </MudItem>
+            </MudGrid>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        @if (!IsLoading)
+        {
+            if (IsEditable)
+            {
+                <MudButton OnClick="HandleSelectedItemChanged" Color="Color.Primary">Edit</MudButton>
+            }
+
+            <MudButton OnClick="Cancel">Close</MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Guid BookingID { get; set; }
+    [Parameter] public bool IsEditable { get; set; } = false;
+    [Inject] private BookingsLogic BookingsLogic { get; set; }
+    [Inject] private GuestsLogic GuestsLogic { get; set; }
+    [Inject] private RoomsLogic RoomsLogic { get; set; }
+    [Inject] private NavigationManager NavigationManager { get; set; }
+
+
+    public string GuestName { get; set; } = "";
+    public string CheckInDate { get; set; } = "";
+    public string CheckOutDate { get; set; } = "";
+    public decimal DownPayment { get; set; } = 0;
+    public decimal TotalPayment { get; set; } = 0;
+    public string Rooms { get; set; } = "";
+    public bool IsLoading { get; set; } = false;
+    public int Role { get; set; } = 2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        var currBooking = await BookingsLogic.GetBookingDetails(BookingID.ToString());
+        var guest = await GuestsLogic.GetGuestDetails(currBooking.GuestId);
+        GuestName = guest.Name;
+        CheckInDate = currBooking.StartDate.ToString("MMMM dd, yyyy");
+        CheckOutDate = currBooking.EndDate.ToString("MMMM dd, yyyy");
+        TotalPayment = currBooking.Total;
+        Rooms = await RoomsLogic.GetBookingRoomNames(currBooking.Id);
+        DownPayment = currBooking.Paid;
+        Role = int.Parse(await _localstorage.GetItemAsStringAsync("Role"));
+
+        IsEditable = currBooking.EndDate >= DateTime.Now.Date || Role <= (int)Enums.RoleTypes.Admin;
+
+        IsLoading = false;
+    }
+
+    void Cancel() => MudDialog.Cancel();
+
+    private void HandleSelectedItemChanged()
+    {
+        MudDialog.Close();
+        NavigationManager.NavigateTo("/bookings/" + BookingID);
+    }
+}

@@ -1,0 +1,125 @@
+﻿@page "/Bookings"
+
+@using reservationSystem.Models;
+@using reservationSystem.BusinessLogic;
+@using reservationSystem.Enums;
+@using Microsoft.EntityFrameworkCore;
+@using MudBlazor;
+@inject ILocalStorageService _localstorage;
+
+<PageTitle>Bookings</PageTitle>
+
+
+<MudCard Style="padding: 20px; margin: 10px" Elevation="3">
+    <MudGrid Style="margin-bottom: 10px">
+        <MudItem xs="0" sm="8" Class="d-flex align-items-end">
+
+            
+        </MudItem>
+
+        <MudItem xs="12" sm="4" Class="d-flex align-items-center">
+            <MudButton Variant="Variant.Filled" 
+                       EndIcon="@Icons.Material.Filled.CheckCircle" 
+                       Style=@($"background-color: {HotelColor}; color:white")
+                       OnClick="@HandleCheckAvailabilityButton">Check Availability</MudButton>
+            <MudSelect T="bool"
+                        Value="IsActiveBookings"
+                        Variant="Variant.Outlined"
+                        Margin="Margin.Dense"
+                        Style="margin-left: 10px;"
+                        ValueChanged="Initialize">
+                <MudSelectItem T="bool" Value=false>Past</MudSelectItem>
+                <MudSelectItem T="bool" Value=true>Active</MudSelectItem>
+            </MudSelect>
+
+            
+        </MudItem>
+    </MudGrid>
+    <MudTable T="Booking"
+                Items="FilteredBookingList"
+                Hover="true"
+                Loading="IsLoading"
+                SortLabel="Sort By"
+                Striped="true">
+
+        <ToolBarContent>
+            <MudGrid Class="d-flex justify-content-between align-items-end">
+                <MudItem xs="6" sm="9" Class="d-flex">
+                    <MudText Typo="Typo.h5"
+                             Style=@($"color: {HotelColor}; font-weight: 500")>
+                        Bookings
+                    </MudText>
+                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                   Style=@($"background-color: {HotelColor}; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   OnClick="@HandleAddButton"
+                                   Size="Size.Small" />
+                </MudItem>
+                <MudItem xs="6" sm="3">
+                    <MudTextField T="string"
+                                  Value="SearchFilter"
+                                  Immediate="true"
+                                  Style=@($"color: {HotelColor};")
+                                  Placeholder="Search"
+                                  Adornment="Adornment.End"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Small"
+                                  TextChanged="@OnSearchFilterChanged">
+                    </MudTextField>
+                </MudItem>
+            </MudGrid>
+            
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Guest</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; justify-content:flex-start")>Status</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Rooms</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Balance</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")><MudTableSortLabel SortBy="new Func<Booking, object>(x=>x.StartDate)">Check In</MudTableSortLabel></MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")><MudTableSortLabel SortBy="new Func<Booking, object>(x=>x.EndDate)">Check Out</MudTableSortLabel></MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; justify-content:flex-end")></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@GetGuestName(context.GuestId)</MudTd>
+            <MudTd DataLabel="Status" Style="width: 100px; align-items: center;">
+                @{
+                    var (color, label) = GetGuestStatus(context.GuestId);
+                    if (!string.IsNullOrEmpty(label))
+                    {
+                        <MudChip Style=@($"background-color: {color}; color: white; width: 80px; display: flex; justify-content: center;") 
+                                Size="Size.Small">@label</MudChip>
+                    }
+                }
+            </MudTd>
+            <MudTd DataLabel="Rooms">@(string.Join(", ", context.BookingRooms.Select(br => br.Room.Name)))</MudTd>
+            <MudTd DataLabel="Balance">@CalculateBalance(context)</MudTd>
+            <MudTd DataLabel="Check In">@context.StartDate.ToString("MMMM dd, yyyy")</MudTd>
+            <MudTd DataLabel="Check Out">@context.EndDate.ToString("MMMM dd, yyyy")</MudTd>
+            <MudTd DataLabel="">
+
+                <MudGrid Justify="Justify.FlexEnd" Spacing="3">
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       OnClick="@(async () => await ShowConfirmation(@context))"
+                                       Size="Size.Small" />
+
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@Icons.Material.Filled.EditNote"
+                                        OnClick="@(async () => await HandleUpdatePaymentButton(@context))"
+                                        Size="Size.Small" />
+
+                    </MudItem>
+
+
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@("far fa-trash-alt")"
+                                        Color="Color.Error"
+                                        OnClick="@(async () => await HandleDeleteButton(@context))"
+                                        Size="Size.Small" />
+                    </MudItem>
+                </MudGrid>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudCard>

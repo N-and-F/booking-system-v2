@@ -1,0 +1,153 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localstorage;
+
+
+<MudDialog Style="min-height: 500px;">
+    <DialogContent>
+        
+        <MudGrid>
+            <MudItem xs="3" sm="3">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="Cancel">Back</MudIconButton>
+            </MudItem>
+            <MudItem xs="9" sm="9" Style="align-content: center;">
+                <MudText Typo="Typo.h5"
+                            Style="font-weight: 500; text-align: start;">Check Availability</MudText>
+            </MudItem>
+        </MudGrid>
+        <MudGrid Style="margin-bottom: 10px">
+            @if (IsLoading)
+            {
+                <MudItem xs="12" Style="margin-top: 0; margin-left: 40%">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Check-In</MudText>
+                    <MudDatePicker PickerVariant="PickerVariant.Dialog"
+                                   DisableToolbar="true"
+                                   @bind-Date="CheckIn"
+                                   IsDateDisabledFunc="@((DateTime dt)=>(dt.Date < DateTime.Today))" />
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Check-Out</MudText>
+                    <MudDatePicker PickerVariant="PickerVariant.Dialog"
+                                   DisableToolbar="true"
+                                   @bind-Date="CheckOut"
+                                   IsDateDisabledFunc="@((DateTime dt)=>(dt.Date <= CheckIn))"
+                                   Disabled="@IsDatePickerDisabled" />
+                </MudItem>
+            }
+            
+        </MudGrid>
+        <MudGrid>
+            @if (IsFirstLoaded)
+            {
+                if (!Rooms.Any())
+                {
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5"
+                                 Style="font-weight: 500;color: red; text-align: center;">
+                            No rooms available
+                        </MudText>
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="12">
+                        <MudTable Items="@Rooms" Hover="true" Loading="IsLoading">
+                            <HeaderContent>
+                                <MudTh>Room</MudTh>
+                                <MudTh>Type</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="Name">@context.Name</MudTd>
+                                <MudTd DataLabel="Type">@RoomsLogic.MapRoom(@context.Type, HotelId, RoomTypes)</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </MudItem>
+                }
+            }
+        </MudGrid>
+            
+            
+
+                
+        
+    </DialogContent>
+   
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Inject] private RoomsLogic RoomsLogic { get; set; }
+
+
+    private DateTime? _checkIn;
+    public DateTime? CheckIn
+    {
+        get => _checkIn;
+        set
+        {
+            _checkIn = value;
+            CalculateAvailability();
+        }
+    }
+    private DateTime? _checkOut;
+    public DateTime? CheckOut
+    {
+        get => _checkOut;
+        set
+        {
+            _checkOut = value;
+            CalculateAvailability();
+        }
+    }
+    private bool IsDatePickerDisabled => CheckIn == null;
+
+    public List<Room> Rooms { get; set; } = new();
+    public bool IsLoading { get; set; } = false;
+    public bool IsFirstLoaded { get; set; } = false;
+    public bool IsDateChanged { get; set; } = false;
+    public int HotelId { get; set; }
+    public List<RoomType> RoomTypes { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        HotelId = int.Parse(await _localstorage.GetItemAsStringAsync("HotelId"));
+        RoomTypes = await RoomsLogic.GetRoomTypes();
+        CheckIn = DateTime.Now;
+        CheckOut = CheckIn.Value.AddDays(1);
+        IsFirstLoaded = true;
+        IsLoading = false;
+    }
+
+    private void CalculateAvailability()
+    {
+        if (IsDateChanged)
+        {
+            IsDateChanged = false;
+            return;
+        }
+        if (CheckIn >= CheckOut)
+        {
+            CheckOut = CheckIn.Value.AddDays(1);
+            Task.Run(async () => await Submit()).Wait();
+            IsDateChanged = true;
+            return;
+        }
+        Task.Run(async () => await Submit()).Wait();
+    }
+
+    public async Task Submit()
+    {
+        Rooms = await RoomsLogic.GetAvailableRooms(CheckIn, CheckOut, HotelId);
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

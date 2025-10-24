@@ -1,0 +1,190 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@inject ISnackbar Snackbar
+
+@if (DialogType == "Add" || DialogType == "Edit")
+{
+    <MudDialog Style="width: 500px; overflow: hidden">
+
+        <DialogContent>
+
+            <MudGrid Style="margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5"
+                             Style="font-weight: 500; text-align: center;">@DialogType User</MudText>
+
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudTextField T="string" @bind-Value="@User.Username" Label="Username" ReadOnly="IsReadOnly(DialogType)" Variant="Variant.Outlined" />
+                            <MudTextField T="string" @bind-Value="@User.Password" Label="Password" ReadOnly="IsReadOnly(DialogType)" Class="my-7" Variant="Variant.Outlined" />
+                            <MudSelect T="int"
+                                       Label="Role"
+                                       AnchorOrigin="Origin.BottomCenter"
+                                       @bind-Value="@User.Role"
+                                       ReadOnly="IsReadOnly(DialogType)"
+                                       Variant="Variant.Outlined">
+
+                                <MudSelectItem Value="1">Admin</MudSelectItem>
+                                <MudSelectItem Value="2">Manager</MudSelectItem>
+                                <MudSelectItem Value="3">Staff</MudSelectItem>
+                            </MudSelect>
+                        </MudItem>
+
+                        <MudItem xs="6" Style="text-align: center">
+                            <MudButton Variant="Variant.Filled"
+                                       OnClick="Cancel">Cancel</MudButton>
+                        </MudItem>
+
+                        <MudItem xs="6" Style="text-align: center">
+                            <MudButton Variant="Variant.Filled"
+                                       Style="justify-content: center;"
+                                       Color="Color.Primary"
+                                       OnClick="SaveUser">Save</MudButton>
+                        </MudItem>
+                    </MudGrid>
+
+                </DialogContent>
+            </MudDialog>
+        }
+        else if (DialogType == "View") // View room
+        {
+            <MudDialog Style="width: 500px; overflow: hidden" DisableSidePadding="true">
+                <DialogContent>
+                    <MudGrid Style="text-align: center; margin-bottom: 10px;">
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType User</MudText>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Username:</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@User.Username</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Role:</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@MapRole(User.Role)</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Password:</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@User.Password</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudButton Variant="Variant.Filled"
+                                       Style="justify-content: center;"
+                                       Color="Color.Primary"
+                                       OnClick="Cancel">Close</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </DialogContent>
+            </MudDialog>
+        }
+        else
+        {
+            <MudDialog Style="width: 500px; overflow: hidden" DisableSidePadding="true">
+
+                <DialogContent>
+                    <MudGrid Style="text-align: center; margin-bottom: 10px">
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType User</MudText>
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.subtitle1" Style="font-weight: 400; text-align: center;">Are you sure you want to delete @User.Username?</MudText>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Filled"
+                                       OnClick="Cancel">Cancel</MudButton>
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudButton Variant="Variant.Filled"
+                                       Color="Color.Error"
+                                       OnClick="HandleDeleteButton">Delete</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </DialogContent>
+            </MudDialog>
+        }
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public User User { get; set; } = new User();
+    [Parameter] public string DialogType { get; set; } = "Add";
+
+    [Inject]
+    private UsersLogic UsersLogic { get; set; }
+    private RoleTypes RoleValue { get; set; }
+
+
+    public string MapRole(int role)
+    {
+        return UsersLogic.MapRole(role);
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    private async void SaveUser()
+    {
+        if (User.Username == "" || User.Username == null)
+        {
+            Snackbar.Add("Username should not be empty", Severity.Error);
+            return;
+        }
+        if (!await UsersLogic.IsUnique(User.Username, User.Id))
+        {
+            Snackbar.Add("Username should be unique", Severity.Error);
+            return;
+        }
+        if (User.Password == "" || User.Password == null)
+        {
+            Snackbar.Add("Password should not be empty", Severity.Error);
+            return;
+        }
+        if (User.Role == -1)
+        {
+            Snackbar.Add("Choose a role", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            if (DialogType == "Add") await UsersLogic.CreateNewUser(User);
+            if (DialogType == "Edit") await UsersLogic.EditUser(User);
+            Snackbar.Add("Changes were saved successfully", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("A problem occured", Severity.Error);
+        }
+        MudDialog.Close(DialogResult.Ok(User));
+    }
+
+    private void HandleEditButton()
+    {
+        DialogType = "Edit";
+    }
+
+    private async void HandleDeleteButton()
+    {
+
+        await UsersLogic.DeleteUser(User.Id);
+        Snackbar.Add("User was successfully deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(User));
+    }
+}

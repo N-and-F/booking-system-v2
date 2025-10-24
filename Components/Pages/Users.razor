@@ -1,0 +1,85 @@
+﻿@page "/Users"
+@using reservationSystem.Models;
+@using reservationSystem.BusinessLogic;
+@using reservationSystem.Enums;
+@using Microsoft.EntityFrameworkCore;
+@using MudBlazor;
+
+<PageTitle>Users</PageTitle>
+<MudLayout Style="padding: 20px">
+    <MudTable T="User"
+              Elevation="5"
+              Items="FilteredUserList"
+              Hover="true"
+              Loading="IsLoading"
+              Striped="true">
+
+        <ToolBarContent>
+            <MudGrid Class="d-flex justify-content-between align-items-end mb-2">
+                <MudItem xs="6" sm="9" Class="d-flex">
+                    <MudText Typo="Typo.h5"
+                             Style=@($"color: {HotelColor}; font-weight: 500")>
+                        Users
+                    </MudText>
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                   Style=@($"background-color: {HotelColor}; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   OnClick="@(async () => await HandleSelectedItemChanged(new User(), "Add"))"
+                                   Size="Size.Small" />
+                </MudItem>
+
+                <MudItem xs="6" sm="3">
+
+                    <MudTextField T="string"
+                                  Value="SearchFilter"
+                                  TextChanged="@OnSearchFilterChanged"
+                                  Immediate="true"
+                                  Placeholder="Search"
+                                  Style=@($"color: {HotelColor};")
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Small"
+                                  Dense="true">
+                    </MudTextField>
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Username</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Role</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Last Logged In</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Username">@context.Username</MudTd>
+            <MudTd DataLabel="Role">@MapRole(@context.Role)</MudTd>
+            <MudTd DataLabel="Last Logged In">@FormatDate(context.LastLoggedIn)</MudTd>
+            <MudTd DataLabel="">
+                <MudGrid Justify="Justify.FlexEnd" Spacing="0">
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                       OnClick="@(async () => await HandleSelectedItemChanged(@context, "View"))"
+                                       Size="Size.Small" />
+
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                       OnClick="@(async () => await HandleSelectedItemChanged(@context, "Edit"))"
+                                       Size="Size.Small" />
+
+                    </MudItem>
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@(" far fa-trash-alt")"
+                                       Color="Color.Error"
+                                       OnClick="@(async () => await HandleSelectedItemChanged(@context, "Delete"))"
+                                       Size="Size.Small" />
+                    </MudItem>
+                </MudGrid>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudLayout>
+
+
+    

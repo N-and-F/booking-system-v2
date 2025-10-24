@@ -1,0 +1,386 @@
+﻿@page "/dashboard"
+
+@using reservationSystem.Models.DTO;
+@using reservationSystem.BusinessLogic;
+
+@inject ILocalStorageService _localstorage;
+
+<PageTitle>Dashboard</PageTitle>
+
+<MudLayout Style="padding: 20px" >
+    @if (IsLoading)
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="175px" />
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="175px" />
+            </MudItem>
+        </MudGrid>
+    }
+    else
+    {
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudTable T="TodayBookingDTO"
+                          Items="CheckInBookingList"
+                          Breakpoint="Breakpoint.Sm"
+                          Elevation="2"
+                          Height="200px"
+                          Hover="true"
+                          Loading="IsLoading"
+                          FixedHeader="true">
+
+
+                    <ToolBarContent>
+                        <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 24px") Typo="Typo.h5">Checked-in</MudText>
+                        <MudSpacer />
+                    </ToolBarContent>
+
+                    <HeaderContent>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Guest</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Rooms</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Since</MudTh>
+                        <MudTh></MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name" Style=@($"color: {HotelColor}")>@context.GuestName</MudTd>
+                        <MudTd DataLabel="Rooms" Style=@($"color: {HotelColor}")>@context.Rooms</MudTd>
+                        <MudTd DataLabel="Since" Style=@($"color: {HotelColor}")>@context.CheckedInSince</MudTd>
+                        <MudTd>
+                            @if (!string.IsNullOrEmpty(context.Notes))
+                            {
+                                <MudButton Variant="Variant.Filled"
+                                          Style=@($"background-color: {HotelColor}; color:white;")
+                                          Size="Size.Small"
+                                          OnClick="@(() => ShowNotes(context.Notes))">
+                                    View Notes
+                                </MudButton>
+                            }
+                        </MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+
+            <MudItem xs="12" sm="6">
+                <MudTable T="TodayBookingDTO"
+                          Items="CheckOutBookingList"
+                          RowsPerPage="5"
+                          Height="200px"
+                          Elevation="2"
+                          Breakpoint="Breakpoint.Sm"
+                          Hover="true"
+                          Loading="IsLoading"
+                          FixedHeader="true">
+
+                    <ToolBarContent>
+                        <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 24px") Typo="Typo.h5">Today's Check-out</MudText>
+                        <MudSpacer />
+                    </ToolBarContent>
+
+                    <HeaderContent>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Guest</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Rooms</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Balance</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name" Style=@($"color: {HotelColor}")>@context.GuestName</MudTd>
+                        <MudTd DataLabel="Rooms" Style=@($"color: {HotelColor}")>@context.Rooms</MudTd>
+                        @if (context.Balance == 0)
+                        {
+                            <MudTd DataLabel="Balance" Style=@($"color: {HotelColor}")>@AccountsLogic.FormatMoney(context.Balance)</MudTd>
+                        }
+                        else
+                        {
+                            <MudTd DataLabel="Balance" Style="color: #ff0000">@AccountsLogic.FormatMoney(context.Balance)</MudTd>
+                        }
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+    }
+
+    
+    
+    @if (HasManagerAccess())
+    {
+        <div style="width: 100%; display: flex; justify-content: space-between;">
+            <MudGrid>
+                @if (HasAdminAccess())
+                {
+                    <MudItem xs="12" sm="6" md="3" Style="margin-top: 20px;">
+                        @if (IsLoading)
+                        {
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" />
+                        }
+                        else
+                        {
+                            <MudSelect T="int"
+                                       Value="DateSelection"
+                                       Variant="Variant.Outlined"
+                                       Margin="Margin.Dense"
+                                       ValueChanged="GetSecondaryData"
+                                       Style="width: 100%;">
+                                <MudSelectItem T="int" Value=4>Last Month</MudSelectItem>
+                                <MudSelectItem T="int" Value=0>This Week</MudSelectItem>
+                                <MudSelectItem T="int" Value=1>This Month</MudSelectItem>
+                                <MudSelectItem T="int" Value=2>This Year</MudSelectItem>
+                                <MudSelectItem T="int" Value=3>All Time</MudSelectItem>
+                            </MudSelect>
+                        }
+                    </MudItem>
+                }
+                else
+                {
+                    <MudItem xs="0" sm="6" md="3"></MudItem>
+
+                }
+
+                <MudItem xs="0" sm="6" md="3"></MudItem>
+                <MudItem xs="0" sm="6" md="3"></MudItem>
+                <MudHidden Breakpoint="Breakpoint.MdAndUp" Invert="true">
+                    <MudItem xs="12" sm="6" md="3" Style="margin-top: 20px;">
+                        @if (IsLoading)
+                        {
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" />
+                        }
+                        else
+                        {
+                            <MudButton Variant="Variant.Filled"
+                                        Style=@($"background-color: {HotelColor}; color:white; width: 100%;")
+                                        OnClick="HandleExportData">
+                                Generate Report
+                            </MudButton>
+                        
+                        
+                        }
+                    </MudItem>
+                </MudHidden>
+            </MudGrid>
+        </div>
+
+
+        <MudGrid Style="margin-top: 30px">
+            <MudItem xs="12" md="8" xl="6">
+                <MudCard Elevation="3" Style="margin-top:27px">
+                    @if (IsLoading)
+                    {
+                        <MudCard>
+                            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="400px" />
+                            <MudCardContent>
+                                <MudSkeleton Animation="Animation.Wave" />
+                            </MudCardContent>
+                        </MudCard>
+                    }
+                    else
+                    {
+                        <MudGrid>
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.body1" Class="py-3" Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>Yearly Reservations</MudText>
+                            </MudItem>
+                        </MudGrid>
+                        <MudChart ChartType="ChartType.Line" 
+                                  ChartSeries="@ReservationSeries" 
+                                  XAxisLabels="@XAxisLabels" 
+                                  ChartOptions="@OptionsReservation" 
+                                  Width="100%" 
+                                  Height="100%" 
+                                  Style="margin-left: 50px">
+                            <CustomGraphics>
+                                <style>
+                                    .mud-chart-line {
+                                        overflow: visible;
+                                    }
+                                </style>
+                            </CustomGraphics>
+                        </MudChart>
+                    }
+                </MudCard>
+            </MudItem>
+            @if (IsSecondaryLoading)
+            {
+                <MudItem xs="12" sm="4" xl="6">
+                    <MudGrid Style="display: block" Spacing="1">
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4 d-flex flex-column align-items-center">
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" Style="margin-bottom:8px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="80%" Height="20px" />
+
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4 d-flex flex-column align-items-center">
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" Style="margin-bottom:8px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="80%" Height="20px" />
+                            </MudCard>
+
+                        </MudItem>
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4 d-flex flex-column align-items-center">
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" Style="margin-bottom:8px" />
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="80%" Height="20px" />
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                
+            }
+            else
+            {
+                <MudItem xs="12" sm="4" xl="6">
+                    <MudGrid Style="display: block" Spacing="1">
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4" Style="min-height:100%">
+
+                                <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 20px") Typo="Typo.h6" Class="mb-2">Total Bookings</MudText>
+                                <div>
+                                    <MudText Style="color: #000000; font-weight:900; font-size: 25px;" Typo="Typo.body1">@TotalBookings</MudText>
+                                    @if (DateSelection != 3)
+                                    {
+                                        if (TotalBookingsDiffPercentage > 0)
+                                        {
+                                            <MudText Style="color: limegreen; font-weight: 600; font-size: 12px;" Typo="Typo.body1">+@TotalBookingsDiffPercentage% @FormatDateSelection(DateSelection)</MudText>
+                                        }
+                                        else
+                                        {
+                                            <MudText Style="color: crimson; font-weight: 600; font-size: 12px;" Typo="Typo.body1">-@Math.Abs(TotalBookingsDiffPercentage)% @FormatDateSelection(DateSelection)</MudText>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <MudText Style="color: #808080; font-weight: 600; font-size: 12px;" Typo="Typo.body1">@TotalDaysOfBookings Total Days Booked</MudText>
+                                    }
+
+
+                                </div>
+                            </MudCard>
+
+                        </MudItem>
+                        @* @if (HasAdminAccess())
+                        {
+                            <MudItem xs="12" sm="3" Class="text-center mt-4">
+                                <MudCard Elevation="3" Class="p-4" Style="min-height:100%">
+
+                                    <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 20px") Typo="Typo.h6" Class="mb-2">Total Revenue</MudText>
+                                    <div>
+                                        <MudText Style="color: #000000; font-weight:900; font-size: 25px;" Typo="Typo.body1">₱ @FormatDecimalWithCommas(TotalRevenue)</MudText>
+                                        <MudText Style="color: #808080; font-weight: 600; font-size: 12px;" Typo="Typo.body1">$ @FormatDecimalWithCommas(RevenueUSD)</MudText>
+                                    </div>
+                                </MudCard>
+
+                            </MudItem>
+
+
+
+                    
+                        } *@
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4" Style="min-height:100%">
+
+                                <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 20px") Typo="Typo.h6" Class="mb-2">Most Booked Room</MudText>
+                                <div>
+                                    @if (MostBookedRoom != null)
+                                    {
+
+                                        <div>
+                                            <MudText Style="color: #000000; font-weight:900; font-size: 25px;" Typo="Typo.body1">@MostBookedRoom.RoomName</MudText>
+                                            <MudText Style="color: #808080; font-weight:600; font-size: 12px;" Typo="Typo.body1">Booked @MostBookedRoom.TotalBookings times</MudText>
+                                        </div>
+                                    }
+
+                                    else
+                                    {
+                                        <MudText Typo="Typo.body1">No bookings yet</MudText>
+                                    }
+                                </div>
+
+                            </MudCard>
+                        </MudItem>
+
+                        <MudItem xs="12" sm="12" Class="text-center mt-4">
+                            <MudCard Elevation="3" Class="p-4">
+                                <MudText Style=@($"color: {HotelColor}; font-weight:600; font-size: 20px") Typo="Typo.h6" Class="mb-2">Total Rooms Booked</MudText>
+                                <div>
+                                    <MudText Style="color: #000000; font-weight:900; font-size: 25px;" Typo="Typo.body1"><MudText Style="color: #000000; font-weight:900; font-size: 25px;" Typo="Typo.body1">@TotalRoomsBooked</MudText></MudText>
+                                    <MudText Style="color: #808080; font-weight: 600; font-size: 12px;" Typo="Typo.body1">Booked @PercentageOfBookedRooms% of the time</MudText>
+                                </div>
+                            </MudCard>
+                        </MudItem>
+                    </MudGrid>
+                </MudItem>
+                
+            }
+        </MudGrid>
+
+
+        @* <MudGrid Style="margin-top: 30px">
+            @if (HasAdminAccess())
+            {
+                <MudItem xs="12" md="6" xl="4">
+                    <MudCard Elevation="3">
+                        @if (IsLoading)
+                        {
+                            <MudCard>
+                                <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="400px" />
+                                <MudCardContent>
+                                    <MudSkeleton Animation="Animation.Wave" />
+                                </MudCardContent>
+                            </MudCard>
+                        }
+                        else
+                        {
+                            <MudGrid>
+                                <MudItem xs="12">
+                                    <MudText Typo="Typo.body1" Class="py-3" Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>Revenues per month as of 2024</MudText>
+                                </MudItem>
+                            </MudGrid>
+                            <MudChart ChartType="ChartType.Bar"
+                                      ChartSeries="@RevenueSeries"
+                                      XAxisLabels="@XAxisLabels"
+                                      ChartOptions="@OptionsRevenue"
+                                      Width="100%"
+                                      Height="100%"
+                                      Style="margin-left: 50px">
+                                <CustomGraphics>
+                                    <style>
+                                        .mud-chart-line {
+                                            overflow: visible;
+                                        }
+                                    </style>
+                                </CustomGraphics>
+                            </MudChart>
+
+                        }
+                    </MudCard>
+
+
+                </MudItem>
+            }
+
+    </MudGrid>*@
+        <MudGrid>
+            <MudHidden Breakpoint="Breakpoint.MdAndUp">
+                <MudItem xs="12" sm="6" md="6" Style="margin-top: 20px;">
+                    @if (IsLoading)
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Width="100%" Height="40px" />
+                    }
+                    else
+                    {
+                        <MudButton Variant="Variant.Filled"
+                                   Style=@($"background-color: {HotelColor}; color:white; width: 100%;")
+                                   OnClick="HandleExportData">
+                            Generate Report
+                        </MudButton>
+
+
+                    }
+                </MudItem>
+            </MudHidden>
+        </MudGrid>
+    }
+    
+    
+</MudLayout>

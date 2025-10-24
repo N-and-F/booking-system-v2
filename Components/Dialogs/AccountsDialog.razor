@@ -1,0 +1,305 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@inject ISnackbar Snackbar
+
+@if (DialogType == "Add" || DialogType == "Edit")
+{
+    <MudDialog Style="width: 500px; overflow: hidden">
+
+        <DialogContent>
+
+            <MudGrid Style="margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5"
+                             Style="font-weight: 500; text-align: center;">@DialogType Account</MudText>
+
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField T="string" @bind-Value="@Account.Name" Label="Account Name" Variant="Variant.Outlined" />
+                    <MudTextField T="decimal" @bind-Value="@Account.Amount" Label="Amount" Class="my-7" Variant="Variant.Outlined" />
+                            
+                </MudItem>
+
+                <MudItem xs="6" Style="text-align: center">
+                    <MudButton Variant="Variant.Filled"
+                                OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+
+                <MudItem xs="6" Style="text-align: center">
+                    <MudButton Variant="Variant.Filled"
+                                Style="justify-content: center;"
+                                Color="Color.Primary"
+                               OnClick="@(async () => await SaveAccount())">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+
+        </DialogContent>
+    </MudDialog>
+}
+else if (DialogType == "View") // View account
+{
+    <MudDialog Style="width: 700px; overflow-x: hidden; padding: 20px" DisableSidePadding="true">
+        <DialogContent>
+            <MudGrid Style="margin-bottom: 10px;">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: start;">@Account.Name</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudGrid Style="display: flex; justify-content: space-between">
+                        <MudItem xs="6">
+                            <MudGrid Style="display: block; padding-left: 15px">
+                            <MudText Typo="Typo.h6" Style="font-weight: 400; justify-content: start">@AccountsLogic.FormatMoney(Account.Amount)</MudText>
+                                <MudText Typo="Typo.caption" Style="justify-content: start">Remaining Balance (last 30 days)</MudText>
+
+                            </MudGrid>
+                        </MudItem>
+                        <MudItem xs="6" Style="justify-content: end;">
+                            <div style="display: flex; justify-content: end; gap: 5px">
+                                <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                               Style="background-color: powderblue"
+                                               OnClick="HandleEditButton"
+                                               Color="Color.Primary"
+                                               Size="Size.Medium" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.SwapHoriz"
+                                               Style="background-color: blanchedalmond"
+                                               OnClick="HandleTransferButton"
+                                               Color="Color.Warning"
+                                               Size="Size.Medium" />
+                                <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                               Style="background-color: lightgray"
+                                               OnClick="HandleDeleteButton"
+                                               Color="Color.Error"
+                                               Size="Size.Medium" />
+                            </div>
+                        </MudItem>
+                    
+                    </MudGrid>
+                </MudItem>
+            </MudGrid>
+            <MudTable Items="@Transactions" Hover="true" Loading="IsLoading" Style="overflow-y: auto" Striped="true">
+                <HeaderContent>
+                    <MudTh Style="width: 150px">Date</MudTh>
+                    <MudTh>Description</MudTh>
+                    <MudTh Style="width: 150px; text-align: center">Amount</MudTh>
+
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Date">@context.Date.ToString("MMM dd, yyyy")</MudTd>
+                    <MudTd DataLabel="Description">@context.Description</MudTd>
+                    @if(context.Type == (int)TransactionTypes.Transfer)
+                    {
+                        <MudTd DataLabel="Amount" Style="color: #b3bfd1">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+                    }
+                    else if (context.Amount >= 0)
+                    {
+                        <MudTd DataLabel="Amount" Style="color: forestgreen">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+                    }
+                    else if (context.Amount < 0)
+                    {
+                        <MudTd DataLabel="Amount" Style="color: orangered">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+
+            }
+
+                </RowTemplate>
+            </MudTable>
+        </DialogContent>
+    </MudDialog>
+}
+else if (DialogType == "Delete")
+{
+    <MudDialog Style="width: 500px; overflow: hidden;" DisableSidePadding="true">
+
+        <DialogContent>
+            <MudGrid Style="text-align: center; margin-bottom: 10px; ">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType Account</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 400; text-align: center;">Are you sure you want to delete @Account.Name?</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                                OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                                Color="Color.Error"
+                               OnClick="@(async () => await HandleDelete())">Delete</MudButton>
+                </MudItem>
+                        
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+else
+{
+    <MudDialog Style="width: 500px; overflow: hidden;" DisableSidePadding="true">
+
+        <DialogContent>
+            <MudGrid Style="text-align: center; margin-bottom: 10px; padding: 0 20px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">Choose an account to transfer to</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudSelect T="Account" Label="Account" @bind-Value="ReceivingAccount" Variant="Variant.Outlined"
+                               Style="padding-bottom: 5px;">
+                        @foreach (var account in AccountList)
+                        {
+                            <MudSelectItem T="Account" Value="@account">@account.Name</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="TransferAmount"
+                                  Label="Amount"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentText="₱"
+                                  T="decimal"
+                                  Immediate />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudTextField @bind-Value="TransferFee"
+                                  Label="Fee*"
+                                  Variant="Variant.Outlined"
+                                  Adornment="Adornment.Start"
+                                  AdornmentText="₱"
+                                  T="decimal"
+                                  Immediate />
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                               OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Warning"
+                               OnClick="@(async () => await HandleTransfer())">Transfer</MudButton>
+                </MudItem>
+
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Account Account { get; set; } = new Account();
+    [Parameter] public string DialogType { get; set; } = "Add";
+    [Parameter] public List<Account> AccountList { get; set; } = [];
+
+    [Inject] private AccountsLogic AccountsLogic { get; set; }
+
+    public List<AccountTransaction> Transactions { get; set; } = new();
+    public bool IsLoading { get; set; } = false;
+    public Account ReceivingAccount { get; set; }
+    public decimal TransferAmount { get; set; } = 0;
+    public decimal TransferFee { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        if (DialogType != "Add")
+        {
+            Transactions = await AccountsLogic.GetTransactions(Account.Id);
+        }
+        IsLoading = false;
+    }
+
+    private void Cancel()
+    {
+        if(DialogType == "Add")
+        {
+            MudDialog.Cancel();
+        }
+        DialogType = "View";
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    private async Task SaveAccount()
+    {
+        if (Account.Name == "" || Account.Name == null)
+        {
+            Snackbar.Add("Account name should not be empty", Severity.Error);
+            return;
+        }
+        if (!await AccountsLogic.IsUnique(Account.Name, Account.Id))
+        {
+            Snackbar.Add("Account name should be unique", Severity.Error);
+            return;
+        }
+
+        try
+        {
+            if (DialogType == "Add") await AccountsLogic.CreateNewAccount(Account);
+            if (DialogType == "Edit") await AccountsLogic.EditAccount(Account);
+            Snackbar.Add("Changes were saved successfully", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("A problem occured", Severity.Error);
+        }
+        MudDialog.Close(DialogResult.Ok(Account));
+    }
+
+    private void HandleEditButton()
+    {
+        DialogType = "Edit";
+    }
+
+    private void HandleDeleteButton()
+    {
+        DialogType = "Delete";
+
+    }
+
+    private async Task HandleDelete()
+    {
+
+        await AccountsLogic.DeleteAccount(Account.Id);
+        Snackbar.Add("Account was successfully deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(Account));
+    }
+
+    private void HandleTransferButton()
+    {
+        AccountList = AccountList.Where(x => x.Id != Account.Id).ToList();
+        DialogType = "Transfer";
+    }
+
+    private async Task HandleTransfer()
+    {
+        if(ReceivingAccount.Name == "" || ReceivingAccount.Name == null)
+        {
+            Snackbar.Add("Please choose an account.", Severity.Error);
+            return;
+        }
+        if (TransferAmount <= 0)
+        {
+            Snackbar.Add("Please enter a valid amount", Severity.Error);
+            return;
+        }
+        if(TransferAmount + TransferFee > Account.Amount)
+        {
+            Snackbar.Add("Amount should not be greater than balance.", Severity.Error);
+            return;
+        }
+        await AccountsLogic.TransferBalance(Account.Id, ReceivingAccount.Id, TransferAmount, TransferFee, null);
+        Snackbar.Add("Balance transferred successfully", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(Account));
+
+    }
+
+    public static string FormatDecimal(decimal value)
+    {
+        return value.ToString("N2", new System.Globalization.CultureInfo("en-US"));
+    }
+}

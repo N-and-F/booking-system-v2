@@ -1,0 +1,153 @@
+﻿@page "/Reports"
+
+@using reservationSystem.Models;
+@using reservationSystem.BusinessLogic;
+@using MudBlazor;
+@using reservationSystem.Models.DTO
+
+<PageTitle>Reports</PageTitle>
+
+@if (IsLoading)
+{
+    <MudCard Style="margin: 20px; padding: 20px" Elevation="3">
+        <MudProgressCircular Color="Color.Primary"
+                             Size="Size.Large"
+                             Indeterminate="true"
+                             Style="margin-top: 0; margin-left:50%;" />
+    </MudCard>
+}
+else
+{
+    <MudLayout Style="padding: 20px">
+        <MudGrid>
+            <MudItem xs="12" sm="4">
+                <MudDateRangePicker @ref="_picker"
+                                    Label="Date Range"
+                                    MinDate="_minDate"
+                                    MaxDate="_maxDate"
+                                    DateRange="_dateRange"
+                                    AutoClose="true"
+                                    PickerVariant="PickerVariant.Dialog"
+                                    Variant="Variant.Outlined"
+                                    DateRangeChanged="(e) => HandleDateRangeChange(e)"/>
+            </MudItem>
+        </MudGrid>
+        
+        <MudGrid>
+            <MudItem xs="12" sm="6">
+                <MudCard Elevation="3" Style="padding: 20px">
+                    <MudText Typo="Typo.body1" 
+                                Class="py-3" 
+                                Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>
+                                Revenue vs Expense
+                    </MudText>
+                    <MudChart ChartType="ChartType.Bar" 
+                                ChartSeries="@BarSeries" 
+                                XAxisLabels="@BarChartXAxis" 
+                                Width="100%" 
+                                Height="350px"
+                                Style="padding-left: 15px"
+                                ChartOptions="BarChartOptions">
+                        <CustomGraphics>
+                            <style>
+                                .mud-chart-line {
+                                    overflow: visible;
+                                }
+
+                                .mud-chart-bar {
+                                    stroke-width: 10px; /* Increase this value to make the bars thicker */
+                                }
+                            </style>
+                        </CustomGraphics>
+
+                    </MudChart>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="6">
+                <MudCard Elevation="3" Style="padding: 20px">
+                    <MudText Typo="Typo.body1"
+                             Class="py-3"
+                             Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>
+                        Profit
+                    </MudText>
+                    <MudChart ChartType="ChartType.Donut"
+                              Height="350px"
+                              @bind-SelectedIndex="ProfitChartIndex" 
+                              InputData="@ProfitChartData" 
+                              InputLabels="@ProfitChartLabels"
+                              ChartOptions="@ProfitChartOptions">
+                        <CustomGraphics>
+                            <text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill=@ProfitCategory font-family="Helvetica" font-size="3">@Profit</text>
+                            <text class="donut-inner-text" x="50%" y="57%" dominant-baseline="middle" text-anchor="middle" fill=@ProfitCategory font-family="Helvetica" font-size="2">@ProfitGoal</text>
+                        </CustomGraphics>
+                    </MudChart>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="3" Style="padding: 20px">
+                    <MudText Typo="Typo.body1"
+                             Class="py-3"
+                             Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>
+                        Income
+                    </MudText>
+                    <MudChart ChartType="ChartType.Pie"
+                              InputData="@IncomeChartData"
+                              InputLabels="@IncomeLabels"
+                              ChartOptions="@IncomeChartOptions">
+                    </MudChart>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudCard Elevation="3" Style="padding: 20px">
+                    <MudText Typo="Typo.body1"
+                             Class="py-3"
+                             Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; text-align: center")>
+                        Expenses
+                    </MudText>
+                    <MudChart ChartType="ChartType.Pie"
+                              InputData="@ExpensesChartData"
+                              InputLabels="@ExpenseLabels"
+                              ChartOptions="@ExpenseChartOptions">
+                    </MudChart>
+                </MudCard>
+            </MudItem>
+            <MudItem xs="12" sm="12">
+                <MudTable T="ReportsTable"
+                          Elevation="5"
+                          Items="TableData"
+                          Hover="true"
+                          Loading="IsLoading"
+                          Style="padding-top: 10px"
+                          Striped="true">
+                    <HeaderContent>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Category</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>In</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Out</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Profit</MudTh>
+                        <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; width: 150px")>Profit Margin</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Category">@context.Category</MudTd>
+                        <MudTd DataLabel="In">@AccountsLogic.FormatMoney(context.In)</MudTd>
+                        <MudTd DataLabel="Out">@AccountsLogic.FormatMoney(context.Out)</MudTd>
+                        <MudTd DataLabel="Profit">@AccountsLogic.FormatMoney(context.Profit)</MudTd>
+                        <MudTd DataLabel="Profit">@AccountsLogic.FormatDecimal(context.ProfitMargin)%</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+        
+        
+    </MudLayout>
+}
+
+<style>
+    .hover-darken{
+        padding: 30px 20px;
+        margin-bottom: 20px;
+        transition: background-color 0.3s ease;
+    }
+    .hover-darken:hover {
+        background-color: lightgray;
+    }
+</style>

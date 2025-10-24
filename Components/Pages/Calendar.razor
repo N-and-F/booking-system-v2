@@ -1,0 +1,74 @@
+﻿@page "/calendar"
+@inject ILocalStorageService _localstorage;
+
+<PageTitle>Calendar</PageTitle>
+
+@if (IsLoading)
+{
+	<MudCard Style="margin: 20px; padding: 20px" Elevation="3">
+		<MudProgressCircular Color="Color.Primary" 
+							 Size="Size.Large"
+							 Indeterminate="true" 
+							Style="margin-top: 0; margin-left:50%;"/>
+	</MudCard>
+}
+
+else
+{
+	<MudPaper Style="margin: 20px; padding: 20px" Elevation="3" xs="12">
+		<div class="title">
+			<MudIconButton Icon="@Icons.Material.Outlined.NavigateBefore"
+						   OnClick="() => { monthsAway--; CreateMonth(); }"
+						   Variant="Variant.Outlined"
+						   Style=@($"background-color: {HotelColor}; color: #ffff;")></MudIconButton>
+			<h1 style=@($"color: {HotelColor}")>@monthName, @year</h1>
+			<MudIconButton Icon="@Icons.Material.Outlined.NavigateNext"
+						   OnClick="() => { monthsAway++; CreateMonth(); }"
+						   Variant="Variant.Outlined"
+						   Style=@($"background-color: {HotelColor}; color: #ffff;")></MudIconButton>
+		</div>
+
+
+		<section class="scrollable-content">
+			@for (int i = 0; i < 7; i++)
+			{
+				<div class="day-name" style=@($"background-color: {HotelColor}")><h3 style="text-align: center; padding-top: 10px; ">@dayOfWeek[i]</h3></div>
+			}
+			@for (int i = 0; i < numDummyColumn; i++)
+			{
+				<div></div>
+			}
+			@for (int i = 1; i <= monthEnd.Day; i++)
+			{
+				var calendarItem = GroupedItems.FirstOrDefault(n => n.Date.Date == new DateTime(year, month, i).Date);
+
+				@if (i == DateTime.Now.Day && month == DateTime.Now.Month && year == DateTime.Now.Year)
+				{
+					<div style="min-height: 150px; background-color: #FE0908; color: #ffff;">
+						<h4>@i</h4>
+
+						@if (calendarItem != null)
+						{
+							<p>@calendarItem.RoomNames</p>
+						}
+					</div>
+				}
+				else
+				{
+					<div style="min-height: 150px;">
+						<h4>@i</h4>
+
+						@if (calendarItem != null)
+						{
+							<p>@calendarItem.RoomNames</p>
+						}
+					</div>
+				}
+
+		}
+		</section>
+	</MudPaper>
+}
+
+
+

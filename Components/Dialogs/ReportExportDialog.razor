@@ -1,0 +1,112 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localstorage;
+
+
+<MudDialog Style="min-height: 250px;">
+    <DialogContent>
+        
+        <MudGrid>
+            <MudItem xs="3" sm="3">
+                <MudIconButton Icon="@Icons.Material.Filled.ArrowBack" OnClick="Cancel">Back</MudIconButton>
+            </MudItem>
+            <MudItem xs="9" sm="9" Style="align-content: center;">
+                <MudText Typo="Typo.h5"
+                            Style="font-weight: 500; text-align: start;">Monthly Report</MudText>
+            </MudItem>
+        </MudGrid>
+        <MudGrid Style="margin-bottom: 10px">
+            @if (IsLoading)
+            {
+                <MudItem xs="12" Style="margin-top: 0; margin-left: 40%">
+                    <MudProgressCircular Size="Size.Large" Indeterminate="true" />
+                </MudItem>
+            }
+            else
+            {
+                <MudItem xs="6">
+                    <MudSelect Dense="true" T="int" Label="Month" @bind-Value="Month" Variant="Variant.Outlined">
+                        @foreach( var mon in Months)
+                        {
+                            <MudSelectItem Value="@mon.Key">@mon.Value</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudSelect Dense="true" T="int" Label="Year" @bind-Value="Year" Variant="Variant.Outlined">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 10; i--)
+                        {
+                            int yearValue = i;
+                            <MudSelectItem Value="@yearValue">@yearValue</MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+            }
+            
+        </MudGrid>
+        <MudGrid>
+            <MudButton Variant="Variant.Filled"
+                       Style=@($"background-color: {HotelColor}; color:white; width: 100%; margin-top: 20px")
+                       OnClick="Submit"
+                       Disabled="IsSubmitting">
+                Export
+            </MudButton>
+        </MudGrid>
+            
+            
+
+                
+        
+    </DialogContent>
+   
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Inject] private ReportsLogic ReportsLogic { get; set; }
+
+    public bool IsLoading { get; set; } = false;
+    public bool IsSubmitting { get; set; } = false;
+    public int HotelId { get; set; }
+    public string HotelColor { get; set; }
+    public List<RoomType> RoomTypes { get; set; } = new();
+    public int Month { get; set; } = DateTime.Now.Month;
+    public int Year { get; set; } = DateTime.Now.Year;
+    public Dictionary<int, string> Months = new Dictionary<int, string>
+    {
+        { 1, "January" },
+        { 2, "February" },
+        { 3, "March" },
+        { 4, "April" },
+        { 5, "May" },
+        { 6, "June" },
+        { 7, "July" },
+        { 8, "August" },
+        { 9, "September" },
+        { 10, "October" },
+        { 11, "November" },
+        { 12, "December" },
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        HotelId = int.Parse(await _localstorage.GetItemAsStringAsync("HotelId"));
+        HotelColor = (await _localstorage.GetItemAsStringAsync("HotelColor")).Replace('\"', ' ').Trim();
+        IsLoading = false;
+    }
+
+    public async Task Submit()
+    {
+        IsSubmitting = true;
+        var startDate = new DateTime(Year, Month, 01);
+        var endDate = startDate.AddMonths(1).AddDays(-1);
+        await ReportsLogic.ExportData(startDate, endDate);
+        IsSubmitting = false;
+        MudDialog.Close();
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

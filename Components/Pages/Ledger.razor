@@ -1,0 +1,110 @@
+﻿@page "/ledger"
+@using reservationSystem.Models;
+@using reservationSystem.BusinessLogic;
+@using reservationSystem.Enums;
+@using Microsoft.EntityFrameworkCore;
+@using MudBlazor;
+
+<PageTitle>Ledger</PageTitle>
+<MudLayout Style="padding: 20px">
+    <MudTable T="AccountTransaction"
+              Elevation="5"
+              Items="FilteredTransactionList"
+              Hover="true"
+              Loading="IsLoading"
+              Style="padding-top: 10px"
+              Striped="true">
+
+        <ToolBarContent>
+            <MudGrid Class="d-flex justify-content-between align-items-end mb-2">
+                <MudItem xs="6" sm="9" Class="d-flex pb-7 mt-7 ">
+                    <MudText Typo="Typo.h5"
+                             Style=@($"color: {HotelColor}; font-weight: 500")>
+                        Ledger
+                    </MudText>
+
+                    @* <MudIconButton Icon="@Icons.Material.Filled.Downloading"
+                                   Style=@($"background-color: green; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   Size="Size.Small" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Outbox"
+                                   Style=@($"background-color: red; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   Size="Size.Small" /> *@
+
+                    <MudIconButton Icon="@Icons.Material.Filled.Downloading"
+                                   Style=@($"background-color: green; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   OnClick="@(async () => await HandleSelectedItemChanged(new AccountTransaction(), "Add", "Income"))"
+                                   Size="Size.Small" />
+                    <MudIconButton Icon="@Icons.Material.Filled.Outbox"
+                                   Style=@($"background-color: red; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                   OnClick="@(async () => await HandleSelectedItemChanged(new AccountTransaction(), "Add", "Expense"))"
+                                   Size="Size.Small" />
+                </MudItem>
+
+                <MudItem xs="6" sm="3"
+                         Style="text-align: end">
+                    <MudIconButton Icon="@Icons.Material.Rounded.FilterAlt"
+                                   Class="mb-2"
+                                   OnClick="@(async () => await HandleSelectedFilterChanged())"
+                                   Size="Size.Medium" />
+                     @* <MudSelect T="int"
+                         Label="Items"
+                         AnchorOrigin="Origin.BottomCenter"
+                         @bind-Value="@PageSize"
+                         @bind-Value:after="HandlePageSizeChanged"
+                         Variant="Variant.Outlined"
+                         Class="mt-7 pb-3"
+                         Dense ="true"
+                     >
+
+                         @foreach(var x in new List<int>() { 10, 50, 100, 1000 })
+                         {
+                             <MudSelectItem Value="x">@x.ToString()</MudSelectItem>
+                         }
+                     </MudSelect> *@
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Date</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Type</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Account</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Description</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px; width: 150px")>Amount</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")></MudTh>
+
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Date">@FormatDate(context.Date)</MudTd>
+            <MudTd DataLabel="Type">@AccountsLogic.MapType(context.Type)</MudTd>
+            <MudTd DataLabel="Account">@context.Account.Name</MudTd>
+            <MudTd DataLabel="Description">@context.Description</MudTd>
+            @if(context.Type == (int)TransactionTypes.Transfer)
+            {
+                <MudTd DataLabel="Amount" Style="color: #b3bfd1">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+            }
+            else if (context.Amount >= 0)
+            {
+                <MudTd DataLabel="Amount" Style="color: forestgreen">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+            }
+            else if (context.Amount < 0)
+            {
+                <MudTd DataLabel="Amount" Style="color: orangered">@AccountsLogic.FormatMoney(context.Amount)</MudTd>
+
+            }
+            <MudTd DataLabel="">
+                <MudGrid style="padding-right: 5px">
+                    <MudItem xs="3">
+                        <MudIconButton Icon="@(" far fa-trash-alt")"
+                                       Color="Color.Error"
+                                       OnClick="@(async () => await HandleSelectedItemChanged(@context, "Delete", "None"))"
+                                       Size="Size.Small" />
+                    </MudItem>
+                </MudGrid>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+</MudLayout>
+
+
+    

@@ -1,0 +1,239 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@inject ISnackbar Snackbar
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localstorage
+        
+@if (DialogType == "Add" || DialogType == "Edit") //Dialog for create and edit room
+    {
+    <MudDialog Style="width: 500px; overflow: hidden">
+        <DialogContent>
+
+            <MudGrid Style="margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5"
+                             Style="font-weight: 500; text-align: center;">@DialogType Room</MudText>
+
+                 </MudItem>
+
+                <MudItem xs="12">
+                    <MudTextField T="string" @bind-Value="@Room.Name" Label="Name" ReadOnly="IsReadOnly(DialogType)" Variant="Variant.Outlined" />
+
+                    @if (IsLoading)
+                    {
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Animation="Animation.Wave" Height="50px" Class="mt-5"/>
+                    }
+                    else
+                    {
+                        <MudSelect T="int" Label="Type"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="@Room.Type"
+                                   ReadOnly="IsReadOnly(DialogType)"
+                                   Variant="Variant.Outlined"
+                                   Class="my-7">
+                            @foreach (var roomType in RoomTypes)
+                            {
+                                <MudSelectItem T="int" Value="roomType.Id">@roomType.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+
+                    <MudNumericField @bind-Value="@Room.NumGuests" Label="Max Guests" Variant="Variant.Outlined" Min="1" Class="mb-5" />
+                    
+                    
+                    <MudTextField T="int" @bind-Value="@Room.Price" Label="Price" ReadOnly="IsReadOnly(DialogType)" Variant="Variant.Outlined" />
+                    @if (Room.Type == 1)
+                    {
+                        <MudSelect T="int" Label="Duplicate of"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="@OrigId"
+                                   ReadOnly="IsReadOnly(DialogType)"
+                                   Variant="Variant.Outlined"
+                                   Class="my-7">
+                            @foreach (var room in SingleRooms)
+                            {
+                                <MudSelectItem Value="@room.Id">@room.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+                    }
+                </MudItem>
+                <MudItem xs="6" Style="text-align: center">
+                    <MudButton Variant="Variant.Filled"
+                                OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+                <MudItem xs="6" Style="text-align: center">
+                    <MudButton Variant="Variant.Filled"
+                                Color="Color.Primary"
+                                Style="justify-content: center;"
+                                OnClick="SaveRoom">Save</MudButton>
+                </MudItem>
+            </MudGrid>
+
+</DialogContent>
+    </MudDialog>
+}
+else if (DialogType == "View") // View room
+{
+    <MudDialog Style="width: 500px; overflow: hidden" DisableSidePadding="true">
+        <DialogContent>
+            <MudGrid Style="text-align: center; margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType Room</MudText>
+                </MudItem>
+
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Name:</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@Room.Name</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Type:</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@RoomsLogic.MapRoom(Room.Type, HotelId, RoomTypes)</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Max Guests:</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@Room.NumGuests</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 500; justify-content: start">Price:</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.subtitle2" Style="font-weight: 400;">@Room.Price</MudText>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton Variant="Variant.Filled"
+                               Style="justify-content: center;"
+                               Color="Color.Primary"
+                               OnClick="Cancel">Close</MudButton>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+else // Delete room
+{
+    <MudDialog Style="width: 500px; overflow: hidden" DisableSidePadding="true">
+
+        <DialogContent>
+
+            <MudGrid Style="text-align: center; margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType Room</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 400; text-align: center;">Are you sure you want to delete room @Room.Name?</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                               OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Error"
+                               OnClick="HandleDeleteButton">Delete</MudButton>
+                </MudItem>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public Room Room { get; set; } = new Room();
+    [Parameter] public string DialogType { get; set; } = "Add";
+    [Parameter] public bool IsStaff { get; set; } = false;
+
+    [Inject]
+    private RoomsLogic RoomsLogic { get; set; }
+    private RoleTypes RoleValue { get; set; }
+    public List<Room> SingleRooms { get; set; } = [];
+    public int OrigId { get; set; }
+    public int HotelId { get; set; }
+    public List<RoomType> RoomTypes { get; set; } = new();
+    public bool IsLoading { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        HotelId = int.Parse(await _localstorage.GetItemAsStringAsync("HotelId"));
+        RoomTypes = await RoomsLogic.GetRoomTypes();
+        SingleRooms = await RoomsLogic.GetSingleRooms();
+        if(DialogType == "Add")
+        {
+            Room.Type = RoomTypes[0].Id;
+        }
+        IsLoading = false;
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    private async void SaveRoom()
+    {
+        if (Room.Name == "" || Room.Name == null)
+        {
+            Snackbar.Add("Name should not be empty", Severity.Error);
+            return;
+        }
+        if (!await RoomsLogic.IsUnique(Room.Name, Room.Id))
+        {
+            Snackbar.Add("Name should be unique", Severity.Error);
+            return;
+        }
+        if (Room.Type == -1)
+        {
+            Snackbar.Add("Choose a type", Severity.Error);
+            return;
+        }
+        if (Room.Price == 0)
+        {
+            Snackbar.Add("Price should not be zero", Severity.Error);
+            return;
+        }
+
+        if (OrigId == 0)
+        {
+            Room.OriginalId = null;
+        }
+        else
+        {
+            Room.OriginalId = OrigId;
+        }
+        
+
+        try
+        {
+            if (DialogType == "Add") await RoomsLogic.CreateNewRoom(Room);
+            if (DialogType == "Edit") await RoomsLogic.EditRoom(Room);
+            Snackbar.Add("Changes were saved successfully", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("A problem occured", Severity.Error);
+        }
+        MudDialog.Close(DialogResult.Ok(Room));
+    }
+
+    private async void HandleDeleteButton()
+    {
+        await RoomsLogic.DeleteRoom(Room.Id);
+        Snackbar.Add("Room was successfully deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(Room));
+    }
+}

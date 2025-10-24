@@ -1,0 +1,74 @@
+﻿@page "/Accounts"
+
+@using reservationSystem.Models;
+@using reservationSystem.BusinessLogic;
+@using MudBlazor;
+
+<PageTitle>Accounts</PageTitle>
+@if (IsLoading)
+{
+    <MudCard Style="margin: 20px; padding: 20px" Elevation="3">
+        <MudProgressCircular Color="Color.Primary"
+                             Size="Size.Large"
+                             Indeterminate="true"
+                             Style="margin-top: 0; margin-left:50%;" />
+    </MudCard>
+}
+else
+{
+    <MudLayout Style="padding: 20px">
+    
+    
+        <MudCard Elevation="3" Style="padding: 20px">
+            <div style="display: flex; margin-bottom: 50px; justify-content: space-between">
+                <MudText Typo="Typo.h5"
+                         Style=@($"color: {HotelColor}; font-weight: 500")>
+                    Accounts
+                </MudText>
+                <MudIconButton Icon="@Icons.Material.Filled.Add"
+                               Style=@($"background-color: {HotelColor}; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                               OnClick="@(async () => await HandleSelectedItemChanged(new Account(), "Add"))"
+                               Size="Size.Small" />
+            </div>
+            @if (AccountList.Count == 0)
+            {
+                <MudText Typo="Typo.h6"
+                         Style=@($"font-weight: 300")>
+                    There are no accounts. Click the button above to add one.
+                </MudText>
+            }
+            @foreach (Account acc in AccountList)
+            {
+                <div onclick="@(async () => await HandleSelectedItemChanged(acc, "View"))">
+                    <MudCard Elevation="2" Class="hover-darken">
+                        <div style="display: flex; justify-content: space-between">
+                            <MudText Typo="Typo.h6"
+                                     Style=@($"font-weight: 500")>
+                                @acc.Name
+                            </MudText>
+                            <MudText Typo="Typo.h6">
+                                @AccountsLogic.FormatMoney(acc.Amount)
+                            </MudText>
+                        </div>
+
+                    </MudCard>
+                </div>
+
+            }
+        </MudCard>
+    
+    
+
+    </MudLayout>
+}
+
+<style>
+    .hover-darken{
+        padding: 30px 20px;
+        margin-bottom: 20px;
+        transition: background-color 0.3s ease;
+    }
+    .hover-darken:hover {
+        background-color: lightgray;
+    }
+</style>

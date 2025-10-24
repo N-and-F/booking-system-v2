@@ -1,0 +1,97 @@
+﻿@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+
+<MudDialog>
+    <DialogContent>
+         <MudGrid Style="margin-bottom: 10px">
+            <MudItem xs="12">
+                <MudText Typo="Typo.h5"
+                            Style="font-weight: 500; text-align: center;">Booking Payment</MudText>
+                </MudItem>
+            <MudItem xs="12">
+                <MudText Typo="Typo.subtitle2">Remaining Balance: @RemainingBalance</MudText>
+                <MudTextField T="int" @bind-Value="Amount" Label="Amount" Variant="Variant.Outlined" />
+                <MudTextField T="string" @bind-Value="Note" Label="Note" Variant="Variant.Outlined" Immediate/>
+                <MudSelect @bind-Value="@SelectedAccount"
+                           AnchorOrigin="Origin.BottomCenter"
+                           Variant="Variant.Outlined"
+                           Label="Account">
+                    <MudSelectItem Value="-1" Disabled="true">Select Account</MudSelectItem>
+
+                    @foreach (var acc in AccountList)
+                    {
+                        <MudSelectItem Value="acc.Id">@acc.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudTable Items="@Payments" Hover="true" Loading="IsLoading">
+                    <HeaderContent>
+                        <MudTh>Date</MudTh>
+                        <MudTh>Note</MudTh>
+                        <MudTh>Amount</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Date">@context.Date</MudTd>
+                        <MudTd DataLabel="Note">@context.Notes</MudTd>
+                        <MudTd DataLabel="Amount">@context.Amount</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudItem>
+        </MudGrid>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" Disabled=@(!IsValid()) OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+    [Parameter] public Booking Booking { get; set; }
+    [Inject] private BookingsLogic BookingsLogic { get; set; }
+    [Inject] private AccountsLogic AccountsLogic { get; set; }
+
+    public List<Account> AccountList { get; set; } = new();
+    public int SelectedAccount { get; set; } = -1;
+
+
+    public string Note { get; set; } = "Final Payment";
+    public int Amount { get; set; }
+    public List<BookingPayment> Payments { get; set; } = new();
+    public decimal RemainingBalance { get; set; } = 0;
+    public bool IsLoading { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        Payments = await BookingsLogic.GetBookingPayments(Booking.Id);
+        AccountList = await AccountsLogic.GetTableItems();
+        RemainingBalance = Booking.Total - Booking.Paid;
+        IsLoading = false;
+    }
+
+    public bool IsValid()
+    {
+        if (SelectedAccount == -1) return false;
+        if (string.IsNullOrEmpty(Note)) return false;
+        Note = Note.Trim();
+        if (string.IsNullOrEmpty(Note)) return false;
+        return true;
+    }
+
+    public async void Submit()
+    {
+        if (string.IsNullOrEmpty(Note)) return;
+        BookingPayment payment = new()
+        {
+            BookingId = Booking.Id,
+            Amount = Amount,
+            Notes = Note,
+            Date = DateTime.Now,
+        };
+        await BookingsLogic.UpdatePayment(payment, SelectedAccount);
+        MudDialog.Close(DialogResult.Ok(true));
+    }
+
+    void Cancel() => MudDialog.Cancel();
+}

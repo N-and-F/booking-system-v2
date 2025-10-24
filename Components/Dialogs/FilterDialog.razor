@@ -1,0 +1,223 @@
+﻿@using System.Globalization
+@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@using Newtonsoft.Json;
+@inject ISnackbar Snackbar
+
+@if (true)
+{
+    <MudDialog Style="width: 500px; overflow-y: auto">
+
+        <DialogContent>
+            @if (IsLoading)
+            {
+                <MudGrid Style="margin-bottom: 10px; text-align: center;">
+                    <MudItem xs="12">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <MudGrid Style="margin-bottom: 10px">
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5"
+                                 Style="font-weight: 500; text-align: center;">Filter</MudText>
+
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudSelect T="string"
+                                   Label="Date"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   @bind-Value="@SelectedDate"
+                                   Variant="Variant.Outlined"
+                                   Class="mb-7">
+
+                            @foreach (var date in DateRanges)
+                            {
+                                <MudSelectItem Value="date">@date</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="string"
+                                    Label="Type"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    MultiSelection="true" 
+                                    SelectAll="true" 
+                                    SelectAllText="All transactions"
+                                    @bind-SelectedValues="@SelectedTransactionTypes"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-7">
+
+                            @foreach (var x in Transactions)
+                            {
+                                <MudSelectItem Value="x">@x</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="int"
+                                   Label="Account"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   MultiSelection="true"
+                                   SelectAll="true"
+                                   SelectAllText="All Accounts"
+                                   @bind-SelectedValues="@SelectedAccounts"
+                                   Variant="Variant.Outlined"
+                                   Class="mb-7"
+                                   MultiSelectionTextFunc="@(new Func<List<string>, string>(GetMultiSelectionText))">
+
+                            @foreach (var x in AccountList)
+                            {
+                                <MudSelectItem  Value="x.Id">@x.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        
+                    </MudItem>
+
+                    <MudItem xs="6" Style="text-align: center">
+                        <MudButton Variant="Variant.Filled"
+                                    OnClick="Cancel">Cancel</MudButton>
+                    </MudItem>
+
+                    <MudItem xs="6" Style="text-align: center">
+                        <MudButton Variant="Variant.Filled"
+                                    Style="justify-content: center;"
+                                    Color="Color.Primary"
+                                    OnClick="Update">Filter</MudButton>
+                    </MudItem>
+                </MudGrid>
+            }
+        </DialogContent>
+    </MudDialog>
+}
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public string FilterType { get; set; } = "Ledger";
+    [Parameter] public string SelectedDate { get; set; } = "Last 7 Days";
+    [Parameter] public IEnumerable<string> SelectedTransactionTypes { get; set; }
+    [Parameter] public IEnumerable<int> SelectedAccounts { get; set; }
+    [Parameter] public List<Account> AccountList { get; set; }
+
+
+
+
+    [Inject] private AccountsLogic AccountsLogic { get; set; }
+    private RoleTypes RoleValue { get; set; }
+    public string Filters { get; set; }
+
+    public bool IsLoading { get; set; } = false;
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    public List<string> DateRanges = new()
+    {
+        "Previous Month",
+        "Last 7 Days",
+        "Last 30 Days",
+        "Today",
+        "This Week",
+        "This Month",
+        "This Year",
+    };
+
+    public List<string> Transactions = new()
+    {
+        "Income",
+        "Expenses",
+        "Transfers",
+        "Others"
+    };
+
+    // protected override async Task OnInitializedAsync()
+    // {
+    //     await Initialize();
+    // }
+
+    // private async Task Initialize(bool isActiveBooking = true)
+    // {
+    //     IsLoading = true;
+    //     HotelColor = (await _localstorage.GetItemAsStringAsync("HotelColor")).Replace('\"', ' ').Trim();
+    //     BookingList = await BookingsLogic.GetTableItems(isActiveBooking);
+    //     FilteredBookingList = new List<Booking>(BookingList);
+    //     GuestList = await GuestsLogic.GetTableItems();
+    //     IsActiveBookings = isActiveBooking;
+    //     IsLoading = false;
+    // }
+
+    public async void Update()
+    {
+        var filters = new Dictionary<string, object>();
+
+        if (FilterType == "Ledger")
+        {
+            filters["date"] = SelectedDate;
+            if (SelectedTransactionTypes == null || !SelectedTransactionTypes.Any())
+            {
+                SelectedTransactionTypes = [];
+            }
+            filters["transactionTypes"] = SelectedTransactionTypes;
+            filters["accounts"] = SelectedAccounts;
+        }
+
+        string filtersJson = JsonConvert.SerializeObject(filters, Formatting.Indented);
+
+        MudDialog.Close(DialogResult.Ok(filtersJson));
+    }
+
+    private string GetMultiSelectionText(List<string> selectedValues)
+    {
+        var accountNames = selectedValues.Select(x => MapAccountName(x)).ToList();
+        return $"{string.Join(", ", accountNames)}";
+    }
+
+    private string MapAccountName(string accountId)
+    {
+        if (string.IsNullOrEmpty(accountId))
+            return "N/A";
+
+        if (AccountList.Count == 0 || int.Parse(accountId) <= 0) return "N/A";
+        Account? account = AccountList.FirstOrDefault(x => x.Id == int.Parse(accountId));
+        if (account == null) return $"Account ID: {accountId}";
+        return account.Name;
+    }
+
+
+    // private Dictionary<string, int> GetTrasactionTypes()
+    // {
+    //     Dictionary<string, int> myDict = new Dictionary<string, int>();
+    //     if (TransactionType == "Income")
+    //     {
+    //         myDict.Add("Hotel Income", (int)TransactionTypes.HotelIncome);
+    //         myDict.Add("Store Sale", (int)TransactionTypes.StoreIncome);
+    //         myDict.Add("Gcash In", (int)TransactionTypes.GcashCashInIncome);
+    //         myDict.Add("Gcash Out", (int)TransactionTypes.GcashCashOutIncome);
+    //         myDict.Add("Load", (int)TransactionTypes.LoadIncome);
+    //         myDict.Add("Van Rental", (int)TransactionTypes.VanIncome);
+    //         myDict.Add("Motor Rental", (int)TransactionTypes.MotorIncome);
+    //         myDict.Add("Other", (int)TransactionTypes.OtherIncome);
+    //     }
+    //     else
+    //     {
+    //         myDict.Add("Hotel Expense", (int)TransactionTypes.HotelExpense);
+    //         myDict.Add("Store Expense", (int)TransactionTypes.StoreExpense);
+    //         myDict.Add("Gcash Expense", (int)TransactionTypes.GcashExpense);
+    //         myDict.Add("Load Expense", (int)TransactionTypes.LoadExpense);
+    //         myDict.Add("Van Expense", (int)TransactionTypes.VanExpense);
+    //         myDict.Add("Motor Expense", (int)TransactionTypes.MotorExpense);
+    //         myDict.Add("Other", (int)TransactionTypes.OtherExpense);
+    //     }
+    //     return myDict;
+    // }
+}

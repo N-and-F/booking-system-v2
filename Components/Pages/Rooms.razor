@@ -1,0 +1,104 @@
+﻿@page "/Rooms"
+
+@using reservationSystem.Models;
+@using MudBlazor;
+
+<PageTitle>Rooms</PageTitle>
+
+<MudLayout Style="padding: 20px">
+    <MudGrid Style="margin-bottom: 10px">
+        @if (!IsStaff)
+        {
+            <MudItem xs="12" sm="12" Class="d-flex align-items-center justify-content-end">
+                <MudButton Variant="Variant.Filled"
+                           EndIcon="@Icons.Material.Outlined.RoomPreferences"
+                           Style=@($"background-color: {HotelColor}; color:white")
+                           OnClick="HandleManageButton">Manage Room Types</MudButton>
+
+
+            </MudItem>
+        }
+        
+    </MudGrid>
+
+    <MudTable T="Room"
+              Items="FilteredRoomList"
+              Hover="true"
+              Elevation="5"
+              Loading="IsLoading"
+              Striped="true">
+
+        <ToolBarContent>
+            <MudGrid Class="d-flex justify-content-between align-items-end mb-2">
+                <MudItem xs="6" sm="9" Class="d-flex">
+                    <MudText Typo="Typo.h5"
+                             Style=@($"color: {HotelColor}; font-weight: 500")>
+                        Rooms
+                    </MudText>
+
+                    @if (!IsStaff)
+                    {
+
+                        <MudIconButton Icon="@Icons.Material.Filled.Add"
+                                       Style=@($"background-color: {HotelColor}; color: #ffff; margin-left: 10px; margin-bottom: 4px ")
+                                       OnClick="@(async () => await HandleSelectedItemChanged(new Room(), "Add"))"
+                                       Size="Size.Small" />
+                    }
+                </MudItem>
+
+                <MudItem xs="6" sm="3">
+
+                    <MudTextField T="string"
+                                  Value="SearchFilter"
+                                  TextChanged="@OnSearchFilterChanged"
+                                  Immediate="true"
+                                  Placeholder="Search"
+                                  Style=@($"color: {HotelColor};")
+                                  Adornment="Adornment.Start"
+                                  AdornmentIcon="@Icons.Material.Filled.Search"
+                                  IconSize="Size.Small"
+                                  Dense="true">
+                    </MudTextField>
+                </MudItem>
+            </MudGrid>
+        </ToolBarContent>
+
+        <HeaderContent>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Name</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px")>Type</MudTh>
+            <MudTh Style=@($"color: {HotelColor}; font-weight:500; font-size: 16px justify-content: flex-end")></MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Name">@context.Name</MudTd>
+            <MudTd DataLabel="Type">@RoomsLogic.MapRoom(@context.Type, HotelId, RoomTypes)</MudTd>
+            <MudTd DataLabel="" Style="justify-content:flex-end">
+                @if (!IsStaff)
+                {
+                    <MudGrid Justify="Justify.FlexEnd" Spacing="0">
+                        <MudItem xs="3">
+                            <MudIconButton Icon="@Icons.Material.Filled.RemoveRedEye"
+                                           OnClick="@(async () => await HandleSelectedItemChanged(@context, "View"))"
+                                           Size="Size.Small" />
+
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           OnClick="@(async () => await HandleSelectedItemChanged(@context, "Edit"))"
+                                           Size="Size.Small" />
+
+                        </MudItem>
+                        <MudItem xs="3">
+                            <MudIconButton Icon="@(" far fa-trash-alt")"
+                                           Color="Color.Error"
+                                           OnClick="@(async () => await HandleSelectedItemChanged(@context, "Delete"))"
+                                           Size="Size.Small" />
+                        </MudItem>
+                    </MudGrid>
+
+                }
+
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+
+</MudLayout>

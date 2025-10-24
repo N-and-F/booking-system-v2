@@ -1,0 +1,86 @@
+﻿@using MudBlazor
+@using reservationSystem.Components.Pages
+@using reservationSystem.Models
+@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localstorage;
+@inherits LayoutComponentBase
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+@if (!IsLoggedIn)
+{
+    <div style="overflow-x: hidden;">
+        <Login OnLoginSuccess="@HandleLoginSuccess" />
+    </div>
+
+}
+else if (IsLoading)
+{
+    <div>
+        <p>Loading...</p>
+    </div>
+}
+else
+{
+    <MudLayout>
+        <MudAppBar Elevation="1" Style=@($"background-color: {HotelColor}")>
+            <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => ToggleDrawer())" />
+            <MudText Style="font-weight: 500" Typo="Typo.h5" Class="ml-3">Welcome, @UserName.Replace('\"', ' ').Trim()!</MudText>
+            <MudSpacer />
+            @*<MudButton OnClick="@(()=> HandleLogoutSuccess())" Style="color: #fff">Signout</MudButton>*@
+            @if (Role == (int)Enums.RoleTypes.SuperAdmin)
+            {
+                <MudSelect T="int" Value="HotelId" Variant="Variant.Filled" FullWidth ValueChanged="HandleHotelChange">
+                    @foreach (var hotel in HotelList)
+                    {
+                        <MudSelectItem Value=@hotel.Id>@hotel.Name</MudSelectItem>
+                    }
+                </MudSelect>
+            }
+            <MudIconButton Icon="@Icons.Material.Filled.PowerSettingsNew"
+                           Variant="Variant.Text"
+                           Style=@($"color: {HotelColor}")
+                           Class="ml-3 bg-white"
+                           OnClick="@(()=> HandleLogoutSuccess())"
+                           Size="Size.Small"></MudIconButton>
+        </MudAppBar>
+        <MudDrawer @bind-Open="DrawerOpen" ClipMode="DrawerClipMode.Always" Elevation="3" Style="overflow: hidden">
+            <MudNavMenu Class="mud-width-full" Bordered="true" Color="Color.Default" Style="overflow-y: auto; overflow-x:hidden">
+
+                <MudImage Src=@($"images/{HotelLogo}") Width="250" Height="250" Alt="N & F Logo" />
+
+                <MudNavLink Class="nav-menu" Href="/dashboard" Icon="@Icons.Material.TwoTone.Dashboard">Dashboard</MudNavLink>
+                <MudNavLink Class="nav-menu" Href="/calendar" Icon="@Icons.Material.TwoTone.CalendarMonth">Calendar</MudNavLink>
+                <MudNavLink Class="nav-menu" Href="/bookings" Icon="@Icons.Material.TwoTone.Book">Bookings</MudNavLink>
+                <MudNavLink Class="nav-menu" Href="/ledger" Icon="@Icons.Material.TwoTone.AccountBalance">Ledger</MudNavLink>
+                @if (Role <= (int)Enums.RoleTypes.Admin)
+                {
+                    <MudNavLink Class="nav-menu" Href="/reports" Icon="@Icons.Material.TwoTone.BarChart">Reports</MudNavLink>
+                }
+                <MudNavGroup Title="Settings" Expanded="false" Icon="@Icons.Material.TwoTone.Settings">
+                    <MudNavLink Class="nav-menu" Href="/rooms" Icon="@Icons.Material.TwoTone.MeetingRoom">Rooms</MudNavLink>
+                    @if (Role <= (int)Enums.RoleTypes.Admin)
+                    {
+                        <MudNavLink Class="nav-menu" Href="/users" Icon="@Icons.Material.TwoTone.People">Users</MudNavLink>
+                    }
+                    @if (Role <= (int)Enums.RoleTypes.Manager)
+                    {
+                        <MudNavLink Class="nav-menu" Href="/accounts" Icon="@Icons.Material.TwoTone.MonetizationOn">Accounts</MudNavLink>
+
+                    }
+                </MudNavGroup>
+                
+
+                
+            </MudNavMenu>
+
+            <MudSpacer />
+
+            <MudText Style="align-self: center; font-size: 14px; font-weight: 500; margin-bottom: 10px">Version 2.5.9</MudText>
+        </MudDrawer>
+        <MudMainContent>
+            @Body
+        </MudMainContent>
+    </MudLayout>
+}

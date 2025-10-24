@@ -1,0 +1,46 @@
+﻿@inject IJSRuntime JSRuntime
+@inject ILocalStorageService _localstorage;
+
+<PageTitle>Overbooked</PageTitle>
+
+<MudLayout Style="height: 100vh; overflow-y: auto; overflow-x: hidden; background-color: deepskyblue">
+    <MudGrid Style="margin-top: 10vh">
+        <MudItem xs="12" Class="d-flex justify-content-center" Style="overflow: hidden">
+            <MudPaper Elevation="5" Class="p-5 d-flex flex-column align-items-center" Style="overflow: hidden; margin-left: 10px; margin-right: 10px">
+                <MudImage Src="images/overbookedlogo.png" Height="300" Alt="Login Background" />
+
+                <MudLayout>
+
+                    <MudTextField @bind-Value="UsernameValue"
+                                  Label="Username"
+                                  Required="true"
+                                  RequiredError="Please enter your username"
+                                  Variant="Variant.Outlined" />
+
+                    <MudTextField @bind-Value="PasswordValue"
+                                  Label="Password"
+                                  Required="true"
+                                  Class="mt-5"
+                                  RequiredError="Please enter your password"
+                                  Variant="Variant.Outlined"
+                                  InputType="InputType.Password" />
+
+                    
+                </MudLayout>
+
+                @if (LoggingIn)
+                {
+                    <MudProgressCircular Style="color: dodgerblue; margin-top: 20px" Size="Size.Medium" Indeterminate="true" />
+                }
+                else
+                {
+                    <MudButton Variant="Variant.Filled"
+                               Color="Color.Primary"
+                               Style="background-color:dodgerblue; margin-top: 20px; width: 150px; height: 75px"
+                               OnClick="@(async () => await HandleLogin())">Login</MudButton>
+                }
+                <MudText Color="Color.Error" Style="font-weight: 500; margin-top: 10px">@ErrorMessage</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudLayout>

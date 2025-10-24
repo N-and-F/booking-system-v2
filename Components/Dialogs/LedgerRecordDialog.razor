@@ -1,0 +1,430 @@
+﻿@using System.Globalization
+@using Newtonsoft.Json
+@using reservationSystem.Models
+@using reservationSystem.BusinessLogic
+@using reservationSystem.Enums
+@inject ISnackbar Snackbar
+
+@if (DialogType == "Add" || DialogType == "Edit")
+{
+    <MudDialog Style="width: 500px; overflow-y: auto">
+
+        <DialogContent>
+            @if (IsLoading)
+            {
+                <MudGrid Style="margin-bottom: 10px; text-align: center;">
+                    <MudItem xs="12">
+                        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                    </MudItem>
+                </MudGrid>
+            }
+            else
+            {
+                <MudGrid Style="margin-bottom: 10px">
+
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.h5"
+                                 Style="font-weight: 500; text-align: center;">@DialogType @TransactionType</MudText>
+
+                    </MudItem>
+
+                    <MudItem xs="12">
+                        <MudSelect T="int"
+                                   Label="Type"
+                                   AnchorOrigin="Origin.BottomCenter"
+                                   Value="@CurrentTransaction"
+                                   ValueChanged="value => HandleTransactionChanged(value)"
+                                   ReadOnly="IsReadOnly(DialogType)"
+                                   Variant="Variant.Outlined"
+                                   Class="mb-7">
+
+                            <MudSelectItem Value="-1" Disabled="true">Select Type</MudSelectItem>
+
+                            @foreach (var type in GetTrasactionTypes())
+                            {
+                                <MudSelectItem Value="type.Value">@type.Key</MudSelectItem>
+                            }
+                        </MudSelect>
+                        <MudSelect T="int"
+                                    Label="Account"
+                                    AnchorOrigin="Origin.BottomCenter"
+                                    Value="@AccountTransaction.AccountId"
+                                    ValueChanged="value => HandleAccountChanged(value)"
+                                    ReadOnly="IsReadOnly(DialogType)"
+                                    Variant="Variant.Outlined"
+                                    Class="mb-7"
+                                    Disabled="!IsAccountEditable">
+
+                            @foreach(var x in ComputedAccounts)
+                            {
+                                <MudSelectItem Value="x.Id">@x.Name</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        @if (IsForTwoAccounts(CurrentTransaction))
+                        {
+                            <MudSelect T="int"
+                                       Label="Receiving Account"
+                                       AnchorOrigin="Origin.BottomCenter"
+                                       @bind-Value="@ReceivingAccountId"
+                                       ReadOnly="IsReadOnly(DialogType)"
+                                       Variant="Variant.Outlined"
+                                       Class="mb-7"
+                                       Disabled="!IsReceivingAccountEditable">
+                                <MudSelectItem Value="-1" Disabled="true">Select Receiving Account</MudSelectItem>
+                                @foreach(var x in Accounts)
+                                {
+                                    <MudSelectItem Value="x.Id">@x.Name</MudSelectItem>
+                                }
+                            </MudSelect>
+                        }
+                    
+                        <MudDatePicker PickerVariant="PickerVariant.Dialog"
+                                DisableToolbar="true"
+                                @bind-Date="@SelectedDate"
+                                IsDateDisabledFunc="@((DateTime dt)=>(dt.Date > DateTime.Now))"
+                                DateFormat="MM/dd/yyyy"
+                                Variant="Variant.Outlined"
+                                Label="Date"
+                                Class="mb-7" />
+                        <MudTextField T="decimal" 
+                                      @bind-Value="@AccountTransaction.Amount" 
+                                      Label="Amount" 
+                                      ReadOnly="IsReadOnly(DialogType)" 
+                                      Class="my-7" 
+                                      Variant="Variant.Outlined" 
+                                      Immediate
+                                      Adornment="Adornment.Start"
+                                      AdornmentText="₱"/>
+                        @if (IsForTwoAccounts(CurrentTransaction))
+                        {
+                            <MudTextField T="decimal" 
+                                          @bind-Value="@TransferCharge" 
+                                          Label="Transfer Charge" 
+                                          ReadOnly="IsReadOnly(DialogType)" 
+                                          Class="my-7" 
+                                          Variant="Variant.Outlined"
+                                          HelperText="@TransferChargeHelperText"
+                                          Adornment="Adornment.Start"
+                                          AdornmentText="₱"/>
+                        }
+                        <MudTextField T="string" @bind-Value="@AccountTransaction.Description" Label="Description" ReadOnly="IsReadOnly(DialogType)" Class="my-7" Variant="Variant.Outlined" />
+
+                    </MudItem>
+
+                    <MudItem xs="6" Style="text-align: center">
+                        <MudButton Variant="Variant.Filled"
+                                    OnClick="Cancel">Cancel</MudButton>
+                    </MudItem>
+
+                    <MudItem xs="6" Style="text-align: center">
+                        <MudButton Variant="Variant.Filled"
+                                    Style="justify-content: center;"
+                                    Color="Color.Primary"
+                                    OnClick="SaveTransaction">Save</MudButton>
+                    </MudItem>
+                </MudGrid>
+            }
+        </DialogContent>
+    </MudDialog>
+}
+else
+{
+    <MudDialog Style="width: 500px; overflow: hidden" DisableSidePadding="true">
+
+        <DialogContent>
+            <MudGrid Style="text-align: center; margin-bottom: 10px">
+                <MudItem xs="12">
+                    <MudText Typo="Typo.h5" Style="font-weight: 500; text-align: center;">@DialogType Transaction</MudText>
+                </MudItem>
+                <MudItem xs="12">
+                    <MudText Typo="Typo.subtitle1" Style="font-weight: 400; text-align: center;">Are you sure you want to delete this transaction?</MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudButton Variant="Variant.Filled"
+                                OnClick="Cancel">Cancel</MudButton>
+                </MudItem>
+                  <MudItem xs="6">
+                      <MudButton Variant="Variant.Filled"
+                                  Color="Color.Error"
+                                  OnClick="HandleDeleteButton">Delete</MudButton>
+                  </MudItem>
+            </MudGrid>
+        </DialogContent>
+    </MudDialog>
+}
+
+@code {
+    [CascadingParameter] MudDialogInstance MudDialog { get; set; }
+
+    [Parameter] public AccountTransaction AccountTransaction { get; set; } = new AccountTransaction();
+    [Parameter] public List<Account> Accounts { get; set; } = new List<Account>();
+    [Parameter] public string DialogType { get; set; } = "Add";
+    [Parameter] public string TransactionType { get; set; } = "Expense";
+
+    [Inject] private AccountsLogic AccountsLogic { get; set; }
+    private RoleTypes RoleValue { get; set; }
+    public DateTime? SelectedDate { get; set; } = DateTime.Today;
+    public bool IsLoading { get; set; } = false;
+    public int ReceivingAccountId { get; set; } = -1;
+    public int CurrentTransaction { get; set; } = -1;
+    public bool IsAccountEditable { get; set; } = true;
+    public bool IsReceivingAccountEditable { get; set; } = true;
+    public List<Account> ComputedAccounts { get; set; } = new List<Account>();
+
+    public string _transferChargeHelperText;
+    public decimal TransferCharge { get; set; }
+    public string TransferChargeHelperText
+    {
+        get
+        {
+            _transferChargeHelperText = $"Input a negative number for transfers with no fees. Suggested fee: {AccountsLogic.FormatMoney(AccountTransaction.Amount * decimal.Parse("0.02", CultureInfo.InvariantCulture))}";
+            return _transferChargeHelperText;
+        }
+        set
+        {
+            _transferChargeHelperText = value;
+        }
+    }
+
+    private void Cancel()
+    {
+        MudDialog.Cancel();
+    }
+
+    private bool IsReadOnly(string type)
+    {
+        if (type == "View") return true;
+        return false;
+    }
+
+    private void HandleAccountChanged(int accountId)
+    {
+        AccountTransaction.AccountId = accountId;
+        switch (accountId)
+        {
+            case 8: // TPC online
+                ReceivingAccountId = 9; // TPC Cash
+                break; 
+            case 3: // Gcash Business online
+                if (IsExpense(CurrentTransaction))
+                {
+                    ReceivingAccountId = 8; // TPC Online
+
+                }
+                else
+                {
+                    ReceivingAccountId = 2; // Gcash Business On Hand
+
+                }
+                break;
+            case 9: // TPC Cash
+                ReceivingAccountId = 8; // TPC Online
+                break;
+            default:
+                break;
+        }
+    }
+    
+    private void HandleTransactionChanged(int type){
+        CurrentTransaction = type;
+        ComputedAccounts = new List<Account>(Accounts);
+        switch(type){
+            case (int)TransactionTypes.GcashCashInIncome:
+                AccountTransaction.AccountId = 3; // gcash business online
+                ReceivingAccountId = 2; // gcash business on hand
+                IsAccountEditable = false;
+                IsReceivingAccountEditable = false;
+                return;
+            case (int)TransactionTypes.GcashCashOutIncome:
+                AccountTransaction.AccountId = 2; // gcash business on hand
+                ReceivingAccountId = 3; // gcash business online
+                IsAccountEditable = false;
+                IsReceivingAccountEditable = false;
+
+                return;
+            case (int)TransactionTypes.LoadIncome:
+                ComputedAccounts = new List<Account>(Accounts.Where(x => x.Id == 3 || x.Id == 8));
+                AccountTransaction.AccountId = 8; // load gcash
+                ReceivingAccountId = 9; // load cash
+                IsAccountEditable = true;
+                IsReceivingAccountEditable = false;
+                return;
+            case (int)TransactionTypes.LoadExpense:
+                ComputedAccounts = new List<Account>(Accounts.Where(x => x.Id == 3 || x.Id == 9));
+                AccountTransaction.AccountId = 9; // load gcash
+                ReceivingAccountId = 8; // load cash
+                IsAccountEditable = true;
+                IsReceivingAccountEditable = false;
+                return;
+            case (int)TransactionTypes.StoreExpense:
+            case (int)TransactionTypes.StoreIncome:
+                AccountTransaction.AccountId = 7; // Store cash
+                IsReceivingAccountEditable = true;
+                return;
+            case -1:
+                IsAccountEditable = false;
+                IsReceivingAccountEditable = false;
+                return;
+            default:
+                IsAccountEditable = true;
+                IsReceivingAccountEditable = true;
+                AccountTransaction.AccountId = 4; // Hotel Cash
+                return;
+        }
+    }
+
+    private async void SaveTransaction()
+    {
+        try
+        {
+            DateTime now = DateTime.Now;
+            AccountTransaction.Date = SelectedDate?.Date.Add(new TimeSpan(now.Hour, now.Minute, now.Second)) ?? now;
+            if (CurrentTransaction == -1)
+            {
+                Snackbar.Add("Please select a transaction type.", Severity.Error);
+                return;
+            }
+            if (IsForTwoAccounts(CurrentTransaction) && TransferCharge == 0)
+            {
+                Snackbar.Add("Transfer charge fee should not be 0. Input a negative number for transfers with no fees.", Severity.Error);
+                return;
+            }
+            else if (IsForTwoAccounts(CurrentTransaction) && TransferCharge < 0)
+            {
+                TransferCharge = 0;
+            }
+            if (String.IsNullOrEmpty(AccountTransaction.Description))
+            {
+                Snackbar.Add("Description should not be empty.", Severity.Error);
+                return;
+            }
+            
+            IsLoading = true;
+
+            if (IsForTwoAccounts(CurrentTransaction))
+            {
+                var transferCharge = TransferCharge;
+                var isLoad = false;
+                var subType = AccountsLogic.MapType(CurrentTransaction);
+                var senderId = AccountTransaction.AccountId;
+                if (IsExpense(CurrentTransaction))
+                {
+                    AccountTransaction.Amount = -AccountTransaction.Amount;
+                    transferCharge = -transferCharge;
+                }
+                var amount = AccountTransaction.Amount;
+                AccountTransaction.Type = CurrentTransaction;
+                if (CurrentTransaction == (int)TransactionTypes.LoadIncome || CurrentTransaction == (int)TransactionTypes.LoadExpense)
+                {
+                    AccountTransaction.Amount += transferCharge;
+                    isLoad = true;
+                }
+                else
+                {
+                    AccountTransaction.Amount = transferCharge;
+                }
+                AccountTransaction.AccountId = ReceivingAccountId;
+                AccountTransaction.Description = subType + " with service charge: ₱" + AccountsLogic.FormatDecimal(transferCharge) + ". " + AccountTransaction.Description;
+                await AccountsLogic.MakeTransaction(AccountTransaction);
+                await AccountsLogic.TransferBalance(senderId, ReceivingAccountId, amount, 0, AccountTransaction.Date, isLoad);
+            }
+            else 
+            {
+                AccountTransaction.Type = CurrentTransaction;
+                if (IsExpense(CurrentTransaction))
+                {
+                    AccountTransaction.Amount = -AccountTransaction.Amount;
+                }
+                AccountTransaction.Description = AccountsLogic.MapType(AccountTransaction.Type) + ": " + AccountTransaction.Description;
+                await AccountsLogic.MakeTransaction(AccountTransaction);
+            }
+            Snackbar.Add("Changes were saved successfully", Severity.Success);
+        }
+        catch
+        {
+            Snackbar.Add("A problem occured", Severity.Error);
+        }
+        IsLoading = false;
+
+        MudDialog.Close(DialogResult.Ok(AccountTransaction));
+    }
+
+    private Dictionary<string, int> GetTrasactionTypes()
+    {
+        Dictionary<string, int> myDict = new Dictionary<string, int>();
+        if (TransactionType == "Income")
+        {
+            myDict.Add("Hotel Income", (int)TransactionTypes.HotelIncome);
+            myDict.Add("Store Sale", (int)TransactionTypes.StoreIncome);
+            myDict.Add("Gcash In", (int)TransactionTypes.GcashCashInIncome);
+            myDict.Add("Gcash Out", (int)TransactionTypes.GcashCashOutIncome);
+            myDict.Add("Load", (int)TransactionTypes.LoadIncome);
+            myDict.Add("Van Rental", (int)TransactionTypes.VanIncome);
+            myDict.Add("Motor Rental", (int)TransactionTypes.MotorIncome);
+            myDict.Add("Other", (int)TransactionTypes.OtherIncome);
+        }
+        else
+        {
+            myDict.Add("Hotel Expense", (int)TransactionTypes.HotelExpense);
+            myDict.Add("Store Expense", (int)TransactionTypes.StoreExpense);
+            myDict.Add("Gcash Expense", (int)TransactionTypes.GcashExpense);
+            myDict.Add("Load Expense", (int)TransactionTypes.LoadExpense);
+            myDict.Add("Van Expense", (int)TransactionTypes.VanExpense);
+            myDict.Add("Motor Expense", (int)TransactionTypes.MotorExpense);
+            myDict.Add("Other", (int)TransactionTypes.OtherExpense);
+        }
+        return myDict;
+    }
+
+    private List<Account> GetRemainingAccounts()
+    {
+        return Accounts.Where(x => x.Id != AccountTransaction.AccountId).ToList();
+    }
+
+    private bool IsForTwoAccounts(int type)
+    {
+        if (type == (int)TransactionTypes.GcashCashInIncome || 
+            type == (int)TransactionTypes.GcashCashOutIncome ||
+            type == (int)TransactionTypes.LoadIncome ||
+            type == (int)TransactionTypes.LoadExpense)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private bool IsExpense(int type)
+    {
+        if (type == (int)TransactionTypes.HotelExpense ||
+            type == (int)TransactionTypes.StoreExpense ||
+            type == (int)TransactionTypes.GcashExpense ||
+            type == (int)TransactionTypes.LoadExpense ||
+            type == (int)TransactionTypes.VanExpense ||
+            type == (int)TransactionTypes.MotorExpense ||
+            type == (int)TransactionTypes.OtherExpense)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private void HandleEditButton()
+    {
+        DialogType = "Edit";
+    }
+
+    private async void HandleDeleteButton()
+    {
+
+        await AccountsLogic.DeleteTransaction(AccountTransaction);
+        Snackbar.Add("Transaction was successfully deleted", Severity.Success);
+        MudDialog.Close(DialogResult.Ok(AccountTransaction));
+    }
+
+    protected override void OnInitialized()
+    {
+        ComputedAccounts = new List<Account>(Accounts);
+    }
+
+}

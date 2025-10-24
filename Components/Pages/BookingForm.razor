@@ -1,0 +1,222 @@
+﻿@page "/bookings/{Id}"
+@using reservationSystem.Models;
+
+<MudLayout Style="padding: 20px">
+
+    @if (IsLoading)
+    {
+        <MudProgressCircular Color="Color.Primary"
+                             Size="Size.Large"
+                             Indeterminate="true"
+                             Style="margin-top: 0; margin-left:40%;" />
+        
+    }
+
+    else
+    {
+        <MudCard Elevation="5" Style="padding: 20px">
+
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Style="font-weight:500; text-align:center;">Booking Form</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+
+            <MudCardContent>
+                <MudGrid>
+                    @*Guest Information*@
+                    <MudItem xs="12">
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: 500;">Guest Information</MudText>
+
+                        <MudAutocomplete T="string" Label="Name" Value="Name" SearchFunc="@SearchGuest"
+                                         ResetValueOnEmptyText="@resetValueOnEmptyText"
+                                         AdornmentIcon="@Icons.Material.Filled.Search"
+                                         AdornmentColor="Color.Primary"
+                                         Immediate=true
+                                         Class="mt-5"
+                                         CoerceValue=true
+                                         Variant="Variant.Outlined"
+                                         Margin="Margin.Dense"
+                                         ValueChanged="@GuestValueChanged" />
+
+                        <MudSelect T="string" Label="Country" @bind-Value="SelectedGuest.Country" Variant="Variant.Outlined"
+                                    Style="padding-bottom: 5px;">
+                            @foreach (var country in Countries)
+                            {
+                                <MudSelectItem T="string" Value="@country">@country</MudSelectItem>
+                            }
+                        </MudSelect>
+
+                        <MudTextField @bind-Value="SelectedGuest.Email"
+                                      Label="Email or Phone Number"
+                                      Variant="Variant.Outlined"
+                                      Margin="Margin.Dense" />
+                    </MudItem>
+
+                    @*Booking Details*@
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: 500;" Class="mt-10">Booking Details</MudText>
+
+                        <MudGrid Class="mt-5">
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Check-In</MudText>
+                                <MudDatePicker PickerVariant="PickerVariant.Dialog" 
+                                               DisableToolbar="true" 
+                                               @bind-Date="CheckIn"
+                                               Disabled="@IsCheckInDisabled"
+                                               DateFormat="MM/dd/yyyy" />
+                            </MudItem>
+
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Check-Out</MudText>
+                                <MudDatePicker PickerVariant="PickerVariant.Dialog"
+                                               DisableToolbar="true"
+                                               @bind-Date="CheckOut"
+                                               IsDateDisabledFunc="@((DateTime dt)=>(dt.Date <= CheckIn))"
+                                               Disabled="@IsCheckOutDisabled"
+                                               DateFormat="MM/dd/yyyy" />
+                            </MudItem>
+
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5">
+
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Select Rooms</MudText>
+                                <MudSelect MultiSelection="true"
+                                           @bind-SelectedValues="@SelectedRooms"
+                                           AnchorOrigin="Origin.BottomCenter"
+                                           ToStringFunc="@ToStringConverter"
+                                           Variant="Variant.Outlined"
+                                           Clearable>
+
+                                    @foreach (var room in RoomList)
+                                    {
+                                        <MudSelectItem Value="room.Id">@room.Name</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+
+                            <MudItem xs="12">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300;">Additional Notes</MudText>
+                                <MudTextField @bind-Value="Notes"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Lines="9"
+                                              Placeholder="Enter additional notes here (e.g. motor rental, additional guests, etc.)"/>
+                            </MudItem>
+                        </MudGrid>
+                    </MudItem>
+
+                    @*Total Payment Breakdown*@
+                    <MudItem xs="12" sm="6">
+                        <MudText Typo="Typo.subtitle1" Style="font-weight: 500;" Class="mt-10">Total Payment Breakdown</MudText>
+                        <MudGrid Class="mt-5">
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5 justify-content-between">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Room Payment: </MudText>
+                                <MudTextField @bind-Value="RoomPayment"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentText="₱"
+                                              Disabled
+                                              Immediate />
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5 justify-content-between">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Additional Payments: </MudText>
+                                <MudTextField @bind-Value="AdditionalPayment"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentText="₱"
+                                              Immediate />
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5 justify-content-between">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Deductions: </MudText>
+                                <MudTextField @bind-Value="Deduction"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentText="₱"
+                                              Immediate />
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5 justify-content-between">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Total Payment: </MudText>
+                                <MudTextField @bind-Value="TotalPayment"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentText="₱"
+                                              Disabled
+                                              Immediate />
+                            </MudItem>
+                            <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5 justify-content-between">
+                                <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Guest Payment: </MudText>
+                                <MudTextField @bind-Value="Paid"
+                                              Variant="Variant.Outlined"
+                                              Margin="Margin.Dense"
+                                              Adornment="Adornment.Start"
+                                              AdornmentText="₱"
+                                              Immediate />
+                            </MudItem>
+                            <MudHidden Breakpoint="Breakpoint.Xs" Invert="true">
+                                <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5">
+                                    <MudSelect @bind-Value="@SelectedAccount"
+                                               AnchorOrigin="Origin.BottomCenter"
+                                               Variant="Variant.Outlined">
+                                        <MudSelectItem Value="-1" Disabled="true">Select Account</MudSelectItem>
+
+                                        @foreach (var acc in AccountList)
+                                        {
+                                            <MudSelectItem Value="acc.Id">@acc.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudHidden>
+                            <MudHidden Breakpoint="Breakpoint.Xs">
+                                <MudItem xs="12" sm="12" Class="d-flex align-items-center gap-5">
+                                    <MudText Typo="Typo.subtitle1" Style="font-weight: 300; min-width: 40%">Account: </MudText>
+                                    <MudSelect @bind-Value="@SelectedAccount"
+                                               AnchorOrigin="Origin.BottomCenter"
+                                               Variant="Variant.Outlined">
+                                        <MudSelectItem Value="-1" Disabled="true">Select Account</MudSelectItem>
+
+                                        @foreach (var acc in AccountList)
+                                        {
+                                            <MudSelectItem Value="acc.Id">@acc.Name</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </MudItem>
+                            </MudHidden>
+                        </MudGrid>
+
+                    </MudItem>
+                     <MudItem xs="12" sm="6" Class="d-flex align-items-start gap-5">
+                         <MudGrid>
+                             <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.subtitle2" Style="min-width: 40%">@Created</MudText>
+                             </MudItem>
+
+                            <MudItem xs="12" sm="6">
+                                <MudText Typo="Typo.subtitle2" Style="min-width: 40%">@Updated</MudText>
+                            </MudItem>
+                         </MudGrid>
+                     </MudItem>
+                </MudGrid>
+            </MudCardContent>
+
+            
+
+            <MudCardActions Style="justify-content:flex-end">
+                <MudButton Variant="Variant.Text"
+                           Style="font-weight: 500; color: #CE140F; margin-top: 20px; font-size: 16px; margin-right: 10px"
+                           OnClick="@HandleBack">Cancel</MudButton>
+
+                <MudButton Variant="Variant.Filled"
+                           Style="font-weight: 500; background-color: #6d0ca6; color: #ffff; margin-top: 20px; font-size: 16px"
+                           OnClick="@HandleSave">Save</MudButton>
+            </MudCardActions>
+
+
+        </MudCard>
+    }
+    
+
+</MudLayout>
