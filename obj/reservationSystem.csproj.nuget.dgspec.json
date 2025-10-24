@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/reservationSystem.csproj": {}
+    "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/reservationSystem.csproj": {}
   },
   "projects": {
-    "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/reservationSystem.csproj": {
+    "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/reservationSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/reservationSystem.csproj",
+        "projectUniqueName": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/reservationSystem.csproj",
         "projectName": "reservationSystem",
-        "projectPath": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/reservationSystem.csproj",
+        "projectPath": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/reservationSystem.csproj",
         "packagesPath": "/Users/nestordesabillejr/.nuget/packages/",
-        "outputPath": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/",
+        "outputPath": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "/Users/nestordesabillejr/.nuget/NuGet/NuGet.Config"

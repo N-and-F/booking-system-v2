@@ -1,47 +1,47 @@
 {
   "Files": [
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css",
       "PackagePath": "staticwebassets/reservationSystem.bundle.scp.css"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/app.css",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/app.css",
       "PackagePath": "staticwebassets/app.css"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/bootstrap/bootstrap.min.css",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/bootstrap/bootstrap.min.css",
       "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/bootstrap/bootstrap.min.css.map",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/bootstrap/bootstrap.min.css.map",
       "PackagePath": "staticwebassets/bootstrap/bootstrap.min.css.map"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/favicon.png",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/favicon.png",
       "PackagePath": "staticwebassets/favicon.png"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/inprogress-image.png",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/inprogress-image.png",
       "PackagePath": "staticwebassets/images/inprogress-image.png"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/login-bg.png",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/login-bg.png",
       "PackagePath": "staticwebassets/images/login-bg.png"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/nandflogo.png",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/nandflogo.png",
       "PackagePath": "staticwebassets/images/nandflogo.png"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/orangelogo.jpg",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/orangelogo.jpg",
       "PackagePath": "staticwebassets/images/orangelogo.jpg"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/overbookedlogo.png",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/overbookedlogo.png",
       "PackagePath": "staticwebassets/images/overbookedlogo.png"
     },
     {
-      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/javascript/Download.js",
+      "Id": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/javascript/Download.js",
       "PackagePath": "staticwebassets/javascript/Download.js"
     },
     {

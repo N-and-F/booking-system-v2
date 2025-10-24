@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("reservationSystem")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0d34016dac420194a0cbcc6b3949bc753d8ad5dc")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+93cc68f8c61935b7d1cc3d1dc3cbf1661218dd8d")]
 [assembly: System.Reflection.AssemblyProductAttribute("reservationSystem")]
 [assembly: System.Reflection.AssemblyTitleAttribute("reservationSystem")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

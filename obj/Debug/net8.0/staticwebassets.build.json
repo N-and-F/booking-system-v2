@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "6yZcUuf9lHIuMJrnpKcoBlDNLNjB4broibxJrDqiWw8=",
+  "Hash": "dUnNIDxHFLRHu9NMKhPQY5FsyESsQeaU60XCQTrLrbw=",
   "Source": "reservationSystem",
   "BasePath": "_content/reservationSystem",
   "Mode": "Default",
@@ -10,7 +10,7 @@
     {
       "Name": "reservationSystem/wwwroot",
       "Source": "reservationSystem",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "Pattern": "**"
     }
@@ -55,10 +55,10 @@
       "OriginalItemSpec": "/Users/nestordesabillejr/.nuget/packages/mudblazor/6.15.0/staticwebassets/MudBlazor.min.js"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/bundle/reservationSystem.styles.css",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/bundle/reservationSystem.styles.css",
       "SourceId": "reservationSystem",
       "SourceType": "Computed",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/bundle/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/bundle/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "reservationSystem.styles.css",
       "AssetKind": "All",
@@ -71,13 +71,13 @@
       "AssetTraitValue": "ApplicationBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/bundle/reservationSystem.styles.css"
+      "OriginalItemSpec": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/bundle/reservationSystem.styles.css"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css",
       "SourceId": "reservationSystem",
       "SourceType": "Computed",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/projectbundle/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/projectbundle/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "reservationSystem.bundle.scp.css",
       "AssetKind": "All",
@@ -90,13 +90,13 @@
       "AssetTraitValue": "ProjectBundle",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css"
+      "OriginalItemSpec": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/obj/Debug/net8.0/scopedcss/projectbundle/reservationSystem.bundle.scp.css"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/app.css",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/app.css",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "app.css",
       "AssetKind": "All",
@@ -112,10 +112,10 @@
       "OriginalItemSpec": "wwwroot/app.css"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/bootstrap/bootstrap.min.css",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/bootstrap/bootstrap.min.css",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "bootstrap/bootstrap.min.css",
       "AssetKind": "All",
@@ -131,10 +131,10 @@
       "OriginalItemSpec": "wwwroot/bootstrap/bootstrap.min.css"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/bootstrap/bootstrap.min.css.map",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/bootstrap/bootstrap.min.css.map",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "bootstrap/bootstrap.min.css.map",
       "AssetKind": "All",
@@ -150,10 +150,10 @@
       "OriginalItemSpec": "wwwroot/bootstrap/bootstrap.min.css.map"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/favicon.png",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/favicon.png",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "favicon.png",
       "AssetKind": "All",
@@ -169,10 +169,10 @@
       "OriginalItemSpec": "wwwroot/favicon.png"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/inprogress-image.png",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/inprogress-image.png",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "images/inprogress-image.png",
       "AssetKind": "All",
@@ -188,10 +188,10 @@
       "OriginalItemSpec": "wwwroot/images/inprogress-image.png"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/login-bg.png",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/login-bg.png",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "images/login-bg.png",
       "AssetKind": "All",
@@ -207,10 +207,10 @@
       "OriginalItemSpec": "wwwroot/images/login-bg.png"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/nandflogo.png",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/nandflogo.png",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "images/nandflogo.png",
       "AssetKind": "All",
@@ -226,10 +226,10 @@
       "OriginalItemSpec": "wwwroot/images/nandflogo.png"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/orangelogo.jpg",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/orangelogo.jpg",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "images/orangelogo.jpg",
       "AssetKind": "All",
@@ -245,10 +245,10 @@
       "OriginalItemSpec": "wwwroot/images/orangelogo.jpg"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/images/overbookedlogo.png",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/images/overbookedlogo.png",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "images/overbookedlogo.png",
       "AssetKind": "All",
@@ -264,10 +264,10 @@
       "OriginalItemSpec": "wwwroot/images/overbookedlogo.png"
     },
     {
-      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/javascript/Download.js",
+      "Identity": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/javascript/Download.js",
       "SourceId": "reservationSystem",
       "SourceType": "Discovered",
-      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system/reservationSystem/wwwroot/",
+      "ContentRoot": "/Users/nestordesabillejr/Documents/Overbooked/booking-system-v2/wwwroot/",
       "BasePath": "_content/reservationSystem",
       "RelativePath": "javascript/Download.js",
       "AssetKind": "All",
